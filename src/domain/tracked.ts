@@ -22,7 +22,10 @@ export type Tracked = {
 
 /** Gleiches Fach (und gleicher Task) mit höchstens so viel Lücke wird ein Block. */
 export const MERGE_GAP_SEC = 60
-/** Erst ab dieser Dauer wird ein Block gezeigt (auch ein laufender). Kürzeres wäre nur Rauschen. */
+/**
+ * Beendete Blöcke erst ab dieser Dauer zeigen (Kürzeres wäre nur Rauschen).
+ * Ein laufender Block ist immer sichtbar – er verschwindet nur, wenn er vorher beendet wird.
+ */
 export const MIN_BLOCK_SEC = 5 * 60
 
 const clockMin = (sec: number): number => {
@@ -51,7 +54,7 @@ export function trackedByDay(s: State, days: string[], nowSec: number): Record<s
       raw.push({ a, ...(k ? { k } : {}), start: st, end: en, live: false })
     }
   const r = s.meta.run
-  if (r && r.a !== PAUSE && nowSec > r.t && r.t < to && nowSec > from) raw.push({ a: r.a, ...(r.k ? { k: r.k } : {}), start: r.t, end: nowSec, live: true })
+  if (r && r.a !== PAUSE && nowSec >= r.t && r.t < to && nowSec > from) raw.push({ a: r.a, ...(r.k ? { k: r.k } : {}), start: r.t, end: nowSec, live: true })
   raw.sort((x, y) => x.start - y.start)
 
   const merged: Raw[] = []
@@ -68,7 +71,7 @@ export function trackedByDay(s: State, days: string[], nowSec: number): Record<s
     const de = addDays(parseDayKey(day), 1).getTime() / 1000
     const list: Tracked[] = []
     for (const x of merged) {
-      if (x.end - x.start < MIN_BLOCK_SEC || x.end <= ds || x.start >= de) continue
+      if ((!x.live && x.end - x.start < MIN_BLOCK_SEC) || x.end < ds || x.start >= de || (x.end === ds && !x.live)) continue
       const a = Math.max(x.start, ds)
       const b = Math.min(x.end, de)
       list.push({

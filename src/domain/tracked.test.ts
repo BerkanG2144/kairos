@@ -76,12 +76,15 @@ describe('trackedByDay', () => {
     expect(r.map((x) => [x.s, x.e])).toEqual([[60, 240]])
   })
 
-  it('Grenze 5 min: genau 5 min ist ein Block; laufender Timer erst ab 5 min', () => {
+  it('Grenze 5 min: beendet ab genau 5 min ein Block; laufender Timer sofort sichtbar', () => {
     const s = st([['m', at('2026-11-18T10:00:00'), at('2026-11-18T10:05:00')]])
     expect(trackedByDay(s, ['2026-11-18'], 0)['2026-11-18']).toHaveLength(1)
     const r = st([], { a: 'm', t: at('2026-11-18T14:00:00') })
-    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:04:00'))['2026-11-18']).toEqual([])
-    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:05:00'))['2026-11-18']).toHaveLength(1)
+    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:00:00'))['2026-11-18']).toMatchObject([{ s: 840, e: 840, live: true }])
+    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:02:00'))['2026-11-18']).toMatchObject([{ s: 840, e: 842, live: true }])
+    // vor 5 min beendet → verschwindet
+    const done = st([['m', at('2026-11-18T14:00:00'), at('2026-11-18T14:04:59')]])
+    expect(trackedByDay(done, ['2026-11-18'], at('2026-11-18T14:10:00'))['2026-11-18']).toEqual([])
   })
 
   it('Tage ohne Einträge sind leere Listen', () => {

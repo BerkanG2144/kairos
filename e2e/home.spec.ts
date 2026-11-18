@@ -73,3 +73,32 @@ test('Tasks oben/unten anlegen, umsortieren, Timer → Live-Block + Stunden, erl
   await page.getByRole('link', { name: 'Plan', exact: true }).click()
   await expect(page.locator('[data-plan-day="2026-11-18"] [data-task]')).toHaveCount(3)
 })
+
+test('Live-Block ist sofort da; vor 5 min beendet verschwindet er, danach bleibt er', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/#tracker')
+  await page.getByRole('button', { name: 'Fach hinzufügen' }).click()
+  await page.getByLabel('Neues Fach').fill('Mathe')
+  await page.keyboard.press('Enter')
+  await page.getByRole('link', { name: 'Home' }).click()
+  await add(page, 'Kurz')
+  const card = page.getByTestId('home-open').locator('[data-task]', { hasText: 'Kurz' })
+  const timeline = page.getByTestId('day-timeline')
+
+  await card.hover()
+  await card.getByRole('button', { name: 'Kurz starten' }).click()
+  await page.getByRole('menuitemradio', { name: 'Mathe' }).click()
+  await page.clock.runFor(1000)
+  await expect(timeline.locator('[data-tracked="live"]')).toHaveAccessibleName('Getrackt: Kurz 15:00–jetzt')
+
+  await page.clock.runFor(3 * 60_000)
+  await card.getByRole('button', { name: 'Kurz stoppen' }).click()
+  await expect(timeline.locator('[data-tracked]')).toHaveCount(0)
+
+  // nach 2 min Pause neu starten (≤ 1 min Lücke würde mit der kurzen Session verschmelzen)
+  await page.clock.runFor(2 * 60_000)
+  await card.getByRole('button', { name: 'Kurz starten' }).click()
+  await page.clock.runFor(6 * 60_000)
+  await card.getByRole('button', { name: 'Kurz stoppen' }).click()
+  await expect(timeline.locator('[data-tracked="done"]')).toHaveAccessibleName('Getrackt: Kurz 15:05–15:11')
+})
