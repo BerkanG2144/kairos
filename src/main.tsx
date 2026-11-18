@@ -24,7 +24,7 @@ async function boot() {
   try {
     store = await Store.open(new IdbStorage())
   } catch (e) {
-    console.error('[lernzeit] IndexedDB nicht verfügbar – nur flüchtiger Speicher', e)
+    console.error('[kairos] IndexedDB nicht verfügbar – nur flüchtiger Speicher', e)
     store = await Store.open(new MemoryStorage())
     volatile = true
   }

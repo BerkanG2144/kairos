@@ -1,10 +1,13 @@
-# Lernzeit – Projektkontext
+# Kairos – Projektkontext
 
-Persönliche Lern- und Organisations-App von Berkan (Student, KIT). Ursprünglich eine einzelne
+Kairos (früher „Lernzeit“) ist die persönliche Lern- und Organisations-App von Berkan (Student, KIT). Ursprünglich eine einzelne
 HTML-Datei (`legacy/lernzeit-legacy.html`), wird jetzt zu einer strukturierten Web-App (PWA)
 umgebaut. Der Umzug ist in `PLAN.md` beschrieben.
 
 Kommunikation mit Berkan auf Deutsch. UI-Texte auf Deutsch.
+
+Interne Kennungen bleiben bewusst `lernzeit` (Backup-Feld `app: 'lernzeit'`, IndexedDB-Name,
+localStorage-Keys), damit Backups mit der Legacy-Datei austauschbar bleiben.
 
 ## Stack
 

@@ -20,7 +20,7 @@ export type BackupFile = {
 export function makeBackup(s: State, now: Date): { filename: string; json: string } {
   const file: BackupFile = { app: 'lernzeit', format: 1, schema: SCHEMA_VERSION, exportedAt: now.toISOString(), data: s }
   return {
-    filename: `lernzeit-backup-${dayKey(now)}_${pad(now.getHours())}${pad(now.getMinutes())}.json`,
+    filename: `kairos-backup-${dayKey(now)}_${pad(now.getHours())}${pad(now.getMinutes())}.json`,
     json: JSON.stringify(file, null, 1),
   }
 }

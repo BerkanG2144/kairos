@@ -111,7 +111,7 @@ describe('makeBackup', () => {
     if (!r0.ok) throw new Error(r0.error)
     const state: State = r0.backup.state
     const { filename, json } = makeBackup(state, new Date('2026-11-18T07:04:00'))
-    expect(filename).toBe('lernzeit-backup-2026-11-18_0704.json')
+    expect(filename).toBe('kairos-backup-2026-11-18_0704.json')
     const o = JSON.parse(json)
     expect(o).toMatchObject({ app: 'lernzeit', format: 1, schema: 2, exportedAt: '2026-11-18T06:04:00.000Z' })
     const r = parseBackup(json, NOW + 1)

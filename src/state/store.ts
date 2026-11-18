@@ -91,7 +91,7 @@ export class Store {
     this.queue = this.queue.then(job).then(
       () => this.setStatus('ok'),
       (e: unknown) => {
-        console.error('[lernzeit] Speichern fehlgeschlagen', e)
+        console.error('[kairos] Speichern fehlgeschlagen', e)
         this.setStatus('error')
       },
     )

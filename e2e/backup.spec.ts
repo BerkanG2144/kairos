@@ -47,7 +47,7 @@ test('Export → Import ergibt denselben Stand', async ({ page }) => {
   const dl = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Backup', exact: true }).click()
   const file = await dl
-  expect(file.suggestedFilename()).toBe('lernzeit-backup-2026-11-18_1500.json')
+  expect(file.suggestedFilename()).toBe('kairos-backup-2026-11-18_1500.json')
   const json = JSON.parse(await readFile((await file.path())!, 'utf8'))
   expect(json).toMatchObject({ app: 'lernzeit', format: 1, schema: 2 })
   expect('exams' in json.data.meta).toBe(false)
