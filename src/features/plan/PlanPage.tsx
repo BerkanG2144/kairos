@@ -14,6 +14,7 @@ import { useNow } from '../../state/useNow.ts'
 import styles from './Plan.module.css'
 import { TaskCard } from './TaskCard.tsx'
 import { TaskEditor } from './TaskEditor.tsx'
+import { useFlip } from './useFlip.ts'
 import { useTaskDrag } from './useTaskDrag.ts'
 
 const shift = (day: string, n: number) => dayKey(addDays(parseDayKey(day), n))
@@ -56,6 +57,8 @@ export function PlanPage() {
     minIndex: (d) => minDropIndex(state, d),
     onDrop: (id, d, i) => dispatch((s, n) => moveTask(s, id, d, i, n)),
   })
+
+  useFlip(band, !drag)
 
   // Über Mitternacht offen: heute muss im Band liegen.
   useEffect(() => {

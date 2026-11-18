@@ -207,6 +207,23 @@ describe('Timer am Task', () => {
   })
 })
 
+describe('Abhaken sortiert', () => {
+  it('erledigt → ans Ende des Tages; wieder öffnen → hinter den letzten offenen', () => {
+    let s = base('A', 'B', 'C', 'D')
+    s = toggleTaskDone(s, 't1', T0)
+    expect(titles(s, '2026-11-18')).toEqual(['B', 'C', 'D', 'A'])
+    s = toggleTaskDone(s, 't3', T0)
+    expect(titles(s, '2026-11-18')).toEqual(['B', 'D', 'A', 'C'])
+    s = toggleTaskDone(s, 't1', T0)
+    expect(titles(s, '2026-11-18')).toEqual(['B', 'D', 'A', 'C'])
+    expect(findTask(s, 't1')!.done).toBeUndefined()
+    s = toggleTaskDone(s, 't3', T0)
+    expect(titles(s, '2026-11-18')).toEqual(['B', 'D', 'A', 'C'])
+    s = toggleTaskDone(s, 't2', T0)
+    expect(titles(s, '2026-11-18')).toEqual(['D', 'A', 'C', 'B'])
+  })
+})
+
 describe('Laufender Task ist oben fix', () => {
   it('Start schiebt den Task an die erste Stelle seines Tages', () => {
     let s = base('A', 'B', 'C')

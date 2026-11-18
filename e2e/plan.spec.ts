@@ -86,7 +86,7 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
   await expect(page).toHaveTitle('Kairos')
 
   await page.reload()
-  expect(await titles(col(page, '2026-11-18'))).toEqual(['Blatt 3', 'Altklausur'])
+  expect(await titles(col(page, '2026-11-18'))).toEqual(['Altklausur', 'Blatt 3']) // erledigt → unten
   expect(await titles(col(page, '2026-11-19'))).toEqual(['Skript lesen'])
 })
 

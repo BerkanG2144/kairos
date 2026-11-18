@@ -1,5 +1,7 @@
 .card {
   position: relative;
+  /* über einer abgehakten Karte, die gerade nach unten fliegt (die liegt auf z-index 0) */
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 9px;
@@ -153,7 +155,13 @@
 }
 
 .done {
+  opacity: 0.5;
   border-left-color: color-mix(in srgb, var(--c) 45%, transparent);
+  transition: opacity 0.25s;
+}
+
+.done:hover {
+  opacity: 0.8;
 }
 
 .ghost {

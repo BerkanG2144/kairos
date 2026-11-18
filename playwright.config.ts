@@ -15,6 +15,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     // Service Worker nur in pwa.spec.ts – sonst würde der Cache Tests gegenseitig beeinflussen.
     serviceWorkers: 'block',
+    // Ohne Animationen: Positionen sind sofort endgültig (Animation wird in home.spec.ts eigens geprüft).
+    reducedMotion: 'reduce',
   },
   // Nur Desktop – Kairos wird nicht fürs Handy entwickelt (siehe CLAUDE.md).
   projects: [{ name: 'desktop', use: { ...devices['Desktop Chrome'] } }],

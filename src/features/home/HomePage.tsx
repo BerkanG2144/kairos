@@ -14,6 +14,7 @@ import { useNow } from '../../state/useNow.ts'
 import { usePref } from '../../state/usePref.ts'
 import { TaskCard } from '../plan/TaskCard.tsx'
 import { TaskEditor } from '../plan/TaskEditor.tsx'
+import { useFlip } from '../plan/useFlip.ts'
 import { useTaskDrag } from '../plan/useTaskDrag.ts'
 import { DayTimeline } from './DayTimeline.tsx'
 import styles from './Home.module.css'
@@ -52,6 +53,8 @@ export function HomePage() {
     minIndex: (d) => minDropIndex(state, d),
     onDrop: (id, d, i) => dispatch((s, n) => moveOpenTask(s, id, d, i, n)),
   })
+
+  useFlip(list, !drag)
 
   // Spalten reichen bis zum Fensterrand; Liste und Kalender scrollen für sich.
   useLayoutEffect(() => {

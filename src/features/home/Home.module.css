@@ -112,10 +112,6 @@
   color: var(--text);
 }
 
-.done {
-  opacity: 0.55;
-}
-
 .right {
   min-height: 0;
   background: var(--panel);

@@ -130,16 +130,22 @@ export function deleteTask(s: State, id: string, nowMs: number): State {
   return { ...base, months: { ...base.months, [mk]: { ...m, k: (m.k ?? []).filter((x) => x.id !== id), u: nowMs } } }
 }
 
-/** Abhaken / wieder öffnen. Abhaken stoppt den Timer des Tasks. */
+/**
+ * Abhaken / wieder öffnen. Abgehakt wandert der Task ans Ende seines Tages (unter die
+ * offenen), wieder geöffnet direkt hinter den letzten offenen. Abhaken stoppt seinen Timer.
+ */
 export function toggleTaskDone(s: State, id: string, nowMs: number): State {
   const t = findTask(s, id)
   if (!t) return s
   if (t.done) {
     const { done: _d, ...rest } = t
-    return putTasks(s, [rest], nowMs)
+    const reopened = putTasks(s, [rest], nowMs)
+    const others = tasksOn(reopened, t.d).filter((x) => x.id !== id)
+    return moveOpenTask(reopened, id, t.d, others.filter((x) => !x.done).length, nowMs)
   }
   const base = runningTask(s) === id ? stop(s, nowMs) : s
-  return putTasks(base, [{ ...t, done: true }], nowMs)
+  const done = putTasks(base, [{ ...t, done: true }], nowMs)
+  return moveTask(done, id, t.d, Number.MAX_SAFE_INTEGER, nowMs)
 }
 
 /** ID des Tasks, dessen Timer gerade läuft (nicht während einer Pause). */

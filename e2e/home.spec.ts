@@ -121,3 +121,32 @@ test('Nachts getrackte Zeit ist im Tageskalender sichtbar (00:30)', async ({ pag
   await expect(live).toHaveAccessibleName('Getrackt: MINT Blatt 00:30–jetzt')
   await expect(live).toBeInViewport()
 })
+
+test.describe('Animation', () => {
+  test.use({ reducedMotion: 'no-preference' })
+
+  test('Abhaken: Karte wird grau und fliegt nach unten in „Erledigt“', async ({ page }) => {
+    await freezeAt(page)
+    await page.goto('/')
+    await page.getByRole('radio', { name: '↓ Unten' }).click()
+    await add(page, 'Erster', 'Zweiter', 'Dritter')
+    const first = page.getByTestId('home-open').locator('[data-task]', { hasText: 'Erster' })
+    await first.getByRole('checkbox', { name: 'Erster erledigt' }).click()
+    const card = page.getByTestId('home-done').locator('[data-task]', { hasText: 'Erster' })
+    await expect(card).toHaveAttribute('data-done', 'true')
+    // läuft gerade eine Bewegung von oben nach unten (Start oberhalb der Endposition)?
+    const anim = await card.evaluate((el) =>
+      el
+        .getAnimations()
+        .map((a) => ({ transform: String((a.effect as KeyframeEffect).getKeyframes()[0]?.transform), delay: a.effect!.getTiming().delay }))
+        .filter((a) => a.transform.startsWith('translate')),
+    )
+    expect(anim).toHaveLength(1)
+    expect(anim[0]!.transform).toMatch(/translate\(0px, -\d+(\.\d+)?px\)/)
+    expect(anim[0]!.delay).toBeGreaterThan(0)
+    // ausgegraut (nach dem Übergang; Maus weg, sonst greift der Hover-Zustand)
+    await page.mouse.move(5, 5)
+    await page.clock.runFor(1000)
+    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).opacity)).toBe('0.5')
+  })
+})

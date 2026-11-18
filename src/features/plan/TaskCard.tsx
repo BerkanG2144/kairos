@@ -34,6 +34,7 @@ export function TaskCard({ task, act, acts, time, running, onOpen, onToggleDone,
       className={cx(styles.card, running && styles.running, task.done && styles.done, ghost && styles.ghost)}
       style={vars({ '--c': color })}
       data-task={ghost ? undefined : task.id}
+      data-done={task.done ? 'true' : undefined}
       onPointerDown={onPointerDown}
       onContextMenu={(e) => e.preventDefault()}
       onClick={onOpen}
