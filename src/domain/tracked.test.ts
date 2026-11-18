@@ -43,11 +43,11 @@ describe('trackedByDay', () => {
     ])
   })
 
-  it('verschiedene Tasks im selben Fach bleiben getrennt; Mini-Sessions < 1 min fehlen', () => {
+  it('verschiedene Tasks im selben Fach bleiben getrennt; Sessions unter 5 min fehlen', () => {
     const s = st([
       ['m', at('2026-11-18T10:00:00'), at('2026-11-18T10:30:00'), 'a'],
       ['m', at('2026-11-18T10:30:00'), at('2026-11-18T11:00:00'), 'b'],
-      ['p', at('2026-11-18T12:00:00'), at('2026-11-18T12:00:40')],
+      ['p', at('2026-11-18T12:00:00'), at('2026-11-18T12:04:59')],
     ])
     const r = trackedByDay(s, ['2026-11-18'], 0)['2026-11-18']!
     expect(r.map((x) => x.k)).toEqual(['a', 'b'])
@@ -74,6 +74,14 @@ describe('trackedByDay', () => {
     const s = st([['m', at('2026-03-29T01:00:00+01:00'), at('2026-03-29T04:00:00+02:00')]])
     const r = trackedByDay(s, ['2026-03-29'], 0)['2026-03-29']!
     expect(r.map((x) => [x.s, x.e])).toEqual([[60, 240]])
+  })
+
+  it('Grenze 5 min: genau 5 min ist ein Block; laufender Timer erst ab 5 min', () => {
+    const s = st([['m', at('2026-11-18T10:00:00'), at('2026-11-18T10:05:00')]])
+    expect(trackedByDay(s, ['2026-11-18'], 0)['2026-11-18']).toHaveLength(1)
+    const r = st([], { a: 'm', t: at('2026-11-18T14:00:00') })
+    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:04:00'))['2026-11-18']).toEqual([])
+    expect(trackedByDay(r, ['2026-11-18'], at('2026-11-18T14:05:00'))['2026-11-18']).toHaveLength(1)
   })
 
   it('Tage ohne Einträge sind leere Listen', () => {

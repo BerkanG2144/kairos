@@ -22,8 +22,8 @@ export type Tracked = {
 
 /** Gleiches Fach (und gleicher Task) mit höchstens so viel Lücke wird ein Block. */
 export const MERGE_GAP_SEC = 60
-/** Kürzere Blöcke werden nicht gezeigt (z. B. versehentlich angetippt). */
-export const MIN_BLOCK_SEC = 60
+/** Erst ab dieser Dauer wird ein Block gezeigt (auch ein laufender). Kürzeres wäre nur Rauschen. */
+export const MIN_BLOCK_SEC = 5 * 60
 
 const clockMin = (sec: number): number => {
   const d = new Date(sec * 1000)
