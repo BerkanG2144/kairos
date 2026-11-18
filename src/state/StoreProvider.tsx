@@ -23,3 +23,9 @@ export function useAppState(): State {
 export function useDispatch(): (a: Action) => void {
   return useStore().dispatch
 }
+
+/** Speicher-Status ('error', wenn der letzte Schreibvorgang fehlschlug). */
+export function useSaveStatus() {
+  const store = useStore()
+  return useSyncExternalStore(store.subscribe, () => store.status)
+}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COLORS, PAUSE } from './constants.ts'
 import { emptyState } from './state.ts'
-import { activeActs, addAct, clickAct, clickPause, delAct, start, stop, stopAt } from './tracker.ts'
+import { activeActs, addAct, clickAct, clickPause, delAct, runInfo, start, stop, stopAt } from './tracker.ts'
 import type { State } from './types.ts'
 
 const T0 = new Date('2026-11-18T10:00:00').getTime()
@@ -146,5 +146,16 @@ describe('Timer', () => {
     const s = start(withActs('Mathe'), 'x', ms(3))
     expect(s.meta.u).toBe(ms(3))
     expect(stop(s, ms(4)).months['2026-11']!.u).toBe(ms(4))
+  })
+})
+
+describe('runInfo', () => {
+  it('nichts, Pause, Fach, unbekanntes Fach', () => {
+    const s = withActs('Mathe')
+    const id = s.meta.acts[0]!.id
+    expect(runInfo(s)).toBeNull()
+    expect(runInfo(start(s, PAUSE, T0))).toEqual({ name: 'Pause', color: 'var(--pause)', isPause: true })
+    expect(runInfo(start(s, id, T0))).toEqual({ name: 'Mathe', color: COLORS[0], isPause: false })
+    expect(runInfo(start(s, 'weg', T0))).toEqual({ name: '—', color: 'var(--mute)', isPause: false })
   })
 })

@@ -97,3 +97,12 @@ export function delAct(s: State, id: ActId, nowMs: number): State {
 
 /** Aktive (nicht gelöschte) Fächer. */
 export const activeActs = (s: State): Act[] => s.meta.acts.filter((a) => !a.del)
+
+/** Name und Farbe (CSS-Wert) dessen, was gerade läuft. */
+export function runInfo(s: State): { name: string; color: string; isPause: boolean } | null {
+  const r = s.meta.run
+  if (!r) return null
+  if (r.a === PAUSE) return { name: 'Pause', color: 'var(--pause)', isPause: true }
+  const a = actById(s, r.a)
+  return { name: a ? a.name : '—', color: a ? a.c : 'var(--mute)', isPause: false }
+}

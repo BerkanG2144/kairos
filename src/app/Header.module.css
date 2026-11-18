@@ -1,0 +1,77 @@
+.top {
+  max-width: var(--w-narrow);
+  margin: 0 auto;
+  padding: 28px 32px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.top.wide {
+  max-width: var(--w-wide);
+  padding-left: 48px;
+  padding-right: 48px;
+}
+
+.tabs {
+  display: flex;
+  gap: 22px;
+}
+
+.tabs a {
+  padding: 6px 0;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-spacing);
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s;
+}
+
+.tabs a:hover {
+  color: var(--mute);
+}
+
+.tabs a.act {
+  color: var(--text);
+  border-bottom-color: var(--signal);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+@media (max-width: 880px) {
+  .top {
+    padding: 20px 20px 0;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .top.wide {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .tabs {
+    gap: 16px;
+  }
+}
