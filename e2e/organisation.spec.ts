@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { freezeAt, storedPlan } from './helpers.ts'
+import { freezeAt, importBackup, storedPlan } from './helpers.ts'
 
 const PX = 54
 const H0 = 6
@@ -99,4 +99,33 @@ test('Abgabe abhaken in der Seitenleiste', async ({ page }) => {
   await due.getByRole('checkbox', { name: 'Blatt 5 erledigt' }).click()
   await expect(due.getByRole('checkbox', { name: 'Blatt 5 erledigt' })).toHaveAttribute('aria-checked', 'true')
   await expect(due).toContainText('✓')
+})
+
+test('Getrackte Zeit erscheint live im Kalender und bleibt danach stehen', async ({ page }) => {
+  await freezeAt(page) // Mi 18.11. 15:00
+  await page.goto('/#tracker')
+  await importBackup(page)
+  await page.getByRole('button', { name: 'Mathe', exact: true }).click()
+  await page.clock.runFor(45 * 60_000)
+
+  await page.getByRole('link', { name: 'Organisation' }).click()
+  await page.getByRole('button', { name: 'Woche' }).click()
+  const today = page.locator('[data-col="2026-11-18"]')
+  const live = today.locator('[data-tracked="live"]')
+  await expect(live).toHaveAccessibleName('Getrackt: Mathe 15:00–jetzt')
+  const h1 = (await live.boundingBox())!.height
+  expect(h1).toBeGreaterThan(PX * 0.7) // ~45 min
+
+  // wächst mit
+  await page.clock.runFor(30 * 60_000)
+  await expect.poll(async () => (await live.boundingBox())!.height).toBeGreaterThan(h1 + PX * 0.4)
+
+  // Timer stoppen → fester Block mit Endzeit
+  await page.getByRole('link', { name: 'Tracker' }).click()
+  await page.getByRole('button', { name: 'Stopp' }).click()
+  await page.getByRole('link', { name: 'Organisation' }).click()
+  await expect(today.locator('[data-tracked="live"]')).toHaveCount(0)
+  await expect(today.locator('[data-tracked="done"]', { hasText: '15:00–16:15' })).toHaveAccessibleName('Getrackt: Mathe 15:00–16:15')
+  // frühere Sessions der Woche aus dem Backup sind ebenfalls da
+  expect(await page.locator('[data-tracked="done"]').count()).toBeGreaterThan(1)
 })

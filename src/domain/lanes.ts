@@ -9,17 +9,15 @@ import type { PlanItem } from './types.ts'
 /** Mindestdauer in Minuten (Raster). */
 export const SNAP_MIN = 15
 
-export type Placed = { it: PlanItem; s: number; e: number; lane: number; n: number }
+export type Span<T> = { v: T; s: number; e: number; lane: number; n: number }
 
-export function layoutDay(items: PlanItem[]): Placed[] {
-  const ev: Placed[] = items
-    .map((it) => {
-      const s = toMin(it.t) ?? 0
-      return { it, s, e: Math.max(toMin(it.e) ?? 0, s + SNAP_MIN), lane: 0, n: 1 }
-    })
+/** Beliebige Einträge mit Start/Ende (Minuten ab Mitternacht) auf Spuren verteilen. */
+export function layoutSpans<T>(input: { v: T; s: number; e: number }[]): Span<T>[] {
+  const ev: Span<T>[] = input
+    .map(({ v, s, e }) => ({ v, s, e: Math.max(e, s + SNAP_MIN), lane: 0, n: 1 }))
     .sort((a, b) => a.s - b.s || b.e - a.e)
 
-  let cluster: Placed[] = []
+  let cluster: Span<T>[] = []
   let cEnd = -1
   const flush = () => {
     const n = Math.max(1, ...cluster.map((x) => x.lane + 1))
@@ -37,4 +35,10 @@ export function layoutDay(items: PlanItem[]): Placed[] {
   }
   if (cluster.length) flush()
   return ev
+}
+
+export type Placed = { it: PlanItem; s: number; e: number; lane: number; n: number }
+
+export function layoutDay(items: PlanItem[]): Placed[] {
+  return layoutSpans(items.map((it) => ({ v: it, s: toMin(it.t) ?? 0, e: toMin(it.e) ?? 0 }))).map(({ v, ...r }) => ({ it: v, ...r }))
 }

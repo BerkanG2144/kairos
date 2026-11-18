@@ -7,7 +7,9 @@ import ui from '../../components/ui.module.css'
 import { MONTHS } from '../../domain/constants.ts'
 import { newDraft, newId, planByDay, toggleDone } from '../../domain/plan.ts'
 import { weekLabel } from '../../domain/summary.ts'
-import { addDays, dayKey, mondayOf, startOfDay } from '../../domain/time.ts'
+import { findTask } from '../../domain/tasks.ts'
+import { addDays, dayKey, mondayOf, parseDayKey, startOfDay } from '../../domain/time.ts'
+import { trackedByDay } from '../../domain/tracked.ts'
 import { start } from '../../domain/tracker.ts'
 import type { PlanItem } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
@@ -28,8 +30,8 @@ export type Editing = { it: PlanItem; isNew: boolean }
 export function OrgPage() {
   const state = useAppState()
   const dispatch = useDispatch()
-  // Jede Minute neu zeichnen (Jetzt-Linie, „heute“, Fälligkeiten).
-  const now = useNow(true, 60_000)
+  // Jede Minute neu zeichnen (Jetzt-Linie, „heute“, Fälligkeiten); läuft der Timer, öfter (Live-Block).
+  const now = useNow(true, state.meta.run ? 20_000 : 60_000)
   const today = new Date(now * 1000)
   const [view, setView] = usePref<View>('lernzeit.oview', 'week', isView)
   const [date, setDate] = useState(() => startOfDay(new Date()))
@@ -38,6 +40,12 @@ export function OrgPage() {
   const plan = useMemo(() => planByDay(state), [state])
   const acts = state.meta.acts
   const monday = mondayOf(date)
+  const weekKey = dayKey(monday)
+  const tracked = useMemo(() => {
+    const m = parseDayKey(weekKey)
+    return trackedByDay(state, Array.from({ length: 7 }, (_, i) => dayKey(addDays(m, i))), now)
+  }, [state, weekKey, now])
+  const taskTitle = (id: string) => findTask(state, id)?.title
 
   const actions: OrgActions = {
     open: (it) => setEditing({ it, isNew: false }),
@@ -98,7 +106,7 @@ export function OrgPage() {
       <div className={styles.orggrid}>
         <section aria-label="Kalender">
           {view === 'week' ? (
-            <WeekView monday={monday} plan={plan} acts={acts} actions={actions} now={now} />
+            <WeekView monday={monday} plan={plan} acts={acts} actions={actions} now={now} tracked={tracked} taskTitle={taskTitle} />
           ) : (
             <MonthView
               y={date.getFullYear()}

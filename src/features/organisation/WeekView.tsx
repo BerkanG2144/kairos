@@ -1,9 +1,10 @@
 import { useLayoutEffect, useRef, type HTMLAttributes } from 'react'
 import { cx, vars } from '../../components/cx.ts'
-import { layoutDay, type Placed } from '../../domain/lanes.ts'
+import { layoutSpans, type Placed } from '../../domain/lanes.ts'
 import { isTimed, itemColor, sortItems } from '../../domain/plan.ts'
 import { WEEKDAYS_SHORT } from '../../domain/summary.ts'
-import { addDays, dayKey, fromMin, pad } from '../../domain/time.ts'
+import { addDays, dayKey, fromMin, pad, toMin } from '../../domain/time.ts'
+import type { Tracked } from '../../domain/tracked.ts'
 import type { Act, PlanItem } from '../../domain/types.ts'
 import { Chip } from './Chip.tsx'
 import { H0, H1, minToPx, PX } from './grid.ts'
@@ -18,6 +19,35 @@ type Props = {
   actions: OrgActions
   /** aktuelle Zeit (s) – für Jetzt-Linie und „heute“ */
   now: number
+  /** getrackte Zeit je Tag (aus dem Tracker) */
+  tracked: Record<string, Tracked[]>
+  /** Titel eines Tasks (für getrackte Blöcke mit Task) */
+  taskTitle: (id: string) => string | undefined
+}
+
+/** Geplante Einträge und getrackte Zeit teilen sich die Spuren eines Tages. */
+type Entry = { kind: 'plan'; it: PlanItem } | { kind: 'track'; t: Tracked }
+
+const clock = (m: number) => (m >= 1440 ? '24:00' : fromMin(Math.floor(m)))
+
+/** Getrackte Zeit: schraffiert in der Fachfarbe, wächst live mit, solange der Timer läuft. */
+function TrackedBlock({ t, lane, n, name, color }: { t: Tracked; lane: number; n: number; name: string; color: string }) {
+  const top = Math.max(0, minToPx(t.s))
+  const h = Math.max(14, ((t.e - Math.max(t.s, H0 * 60)) / 60) * PX - 2)
+  const w = 100 / n
+  const time = `${clock(t.s)}–${t.live ? 'jetzt' : clock(t.e)}`
+  return (
+    <div
+      className={cx(styles.trk, t.live && styles.live)}
+      style={{ ...vars({ '--c': color }), top, height: h, left: `calc(${w * lane}% + 2px)`, width: `calc(${w}% - 4px)` }}
+      title={`Getrackt: ${name} · ${time}`}
+      aria-label={`Getrackt: ${name} ${time}`}
+      data-tracked={t.live ? 'live' : 'done'}
+    >
+      <b>{name}</b>
+      <span>{time}</span>
+    </div>
+  )
 }
 
 export function Block({ x, color, dragging, ...rest }: { x: Placed; color: string; dragging?: boolean } & HTMLAttributes<HTMLDivElement>) {
@@ -50,7 +80,7 @@ function Preview({ p, acts }: { p: ReturnType<ReturnType<typeof useBlockDrag>['p
   )
 }
 
-export function WeekView({ monday, plan, acts, actions, now }: Props) {
+export function WeekView({ monday, plan, acts, actions, now, tracked, taskTitle }: Props) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
   const nowD = new Date(now * 1000)
   const tk = dayKey(nowD)
@@ -135,19 +165,32 @@ export function WeekView({ monday, plan, acts, actions, now }: Props) {
                   data-col={k}
                   {...drag.colProps(k)}
                 >
-                  {layoutDay((plan[k] ?? []).filter((it) => isTimed(it) && it.id !== drag.hiddenId)).map((x) => (
-                    <Block
-                      key={x.it.id}
-                      x={x}
-                      color={itemColor(x.it, acts)}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${x.it.title} ${x.it.t}–${x.it.e}`}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') actions.open(x.it)
-                      }}
-                    />
-                  ))}
+                  {layoutSpans<Entry>([
+                    ...(plan[k] ?? [])
+                      .filter((it) => isTimed(it) && it.id !== drag.hiddenId)
+                      .map((it) => ({ v: { kind: 'plan' as const, it }, s: toMin(it.t) ?? 0, e: toMin(it.e) ?? 0 })),
+                    ...(tracked[k] ?? []).filter((t) => t.e > H0 * 60).map((t) => ({ v: { kind: 'track' as const, t }, s: t.s, e: t.e })),
+                  ]).map(({ v, ...pos }) => {
+                    if (v.kind === 'track') {
+                      const act = acts.find((a) => a.id === v.t.a)
+                      const name = (v.t.k && taskTitle(v.t.k)) || act?.name || '—'
+                      return <TrackedBlock key={`trk-${v.t.start}-${v.t.s}`} t={v.t} lane={pos.lane} n={pos.n} name={name} color={act?.c ?? 'var(--mute)'} />
+                    }
+                    const x: Placed = { it: v.it, ...pos }
+                    return (
+                      <Block
+                        key={x.it.id}
+                        x={x}
+                        color={itemColor(x.it, acts)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${x.it.title} ${x.it.t}–${x.it.e}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') actions.open(x.it)
+                        }}
+                      />
+                    )
+                  })}
                   {k === tk && nowMin >= H0 * 60 && <div className={styles.nowline} style={{ top: minToPx(nowMin) }} />}
                   <Preview p={drag.preview(k)} acts={acts} />
                 </div>
