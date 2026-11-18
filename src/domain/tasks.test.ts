@@ -7,6 +7,7 @@ import {
   canStart,
   deleteTask,
   findTask,
+  minDropIndex,
   moveOpenTask,
   moveTask,
   rollover,
@@ -203,6 +204,25 @@ describe('Timer am Task', () => {
     s = delAct(s, act(s, 'Mathe'), T0)
     expect(canStart(s, findTask(s, 't1')!)).toBe(false)
     expect(toggleTaskTimer(s, 't1', ms(0))).toBe(s)
+  })
+})
+
+describe('Laufender Task ist oben fix', () => {
+  it('Start schiebt den Task an die erste Stelle seines Tages', () => {
+    let s = base('A', 'B', 'C')
+    s = toggleTaskTimer(s, 't3', ms(0), act(s, 'Mathe'))
+    expect(titles(s, '2026-11-18')).toEqual(['C', 'A', 'B'])
+    expect(runningTask(s)).toBe('t3')
+  })
+
+  it('minDropIndex: am Tag des laufenden Tasks erst ab Position 1, sonst 0; Pause hebt es auf', () => {
+    let s = base('A', 'B')
+    expect(minDropIndex(s, '2026-11-18')).toBe(0)
+    s = toggleTaskTimer(s, 't2', ms(0), act(s, 'Mathe'))
+    expect(minDropIndex(s, '2026-11-18')).toBe(1)
+    expect(minDropIndex(s, '2026-11-19')).toBe(0)
+    s = clickPause(s, ms(5))
+    expect(minDropIndex(s, '2026-11-18')).toBe(0)
   })
 })
 

@@ -5,7 +5,7 @@ import ui from '../../components/ui.module.css'
 import { MONTHS } from '../../domain/constants.ts'
 import { byDay as sessionsByDay } from '../../domain/sessions.ts'
 import { todayAndWeek, WEEKDAYS_SHORT } from '../../domain/summary.ts'
-import { addTask, findTask, moveTask, runningTask, taskTimes, tasksByDay, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
+import { addTask, findTask, minDropIndex, moveTask, runningTask, taskTimes, tasksByDay, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
 import { addDays, dayKey, parseDayKey } from '../../domain/time.ts'
 import { actById, activeActs } from '../../domain/tracker.ts'
 import type { Task } from '../../domain/types.ts'
@@ -53,6 +53,7 @@ export function PlanPage() {
   const { drag, onPointerDown, consumeClick } = useTaskDrag({
     band,
     canDrop: (d) => d >= today,
+    minIndex: (d) => minDropIndex(state, d),
     onDrop: (id, d, i) => dispatch((s, n) => moveTask(s, id, d, i, n)),
   })
 
@@ -126,7 +127,7 @@ export function PlanPage() {
       onToggleDone={() => dispatch((s, n) => toggleTaskDone(s, t.id, n))}
       onTimer={(a) => dispatch((s, n) => toggleTaskTimer(s, t.id, n, a))}
       onSetAct={(a) => dispatch((s, n) => updateTask(s, t.id, { act: a }, n))}
-      onPointerDown={ghost ? undefined : (e) => onPointerDown(e, t.id)}
+      onPointerDown={ghost || running === t.id ? undefined : (e) => onPointerDown(e, t.id)}
     />
   )
   const dragged = drag ? findTask(state, drag.id) : null

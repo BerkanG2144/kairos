@@ -157,6 +157,7 @@ export function canStart(s: State, t: Task): boolean {
 /**
  * ▶/■ auf der Karte: läuft der Task, stoppen; sonst Timer für sein Fach starten.
  * Mit `act` wird ihm vorher dieses Fach zugewiesen (Task ohne Fach). Ein abgehakter Task wird wieder geöffnet.
+ * Beim Start rückt der Task an die erste Stelle seines Tages (dort ist er fix, solange er läuft).
  */
 export function toggleTaskTimer(s: State, id: string, nowMs: number, act?: ActId): State {
   const old = findTask(s, id)
@@ -171,7 +172,13 @@ export function toggleTaskTimer(s: State, id: string, nowMs: number, act?: ActId
   const a = actById(s, t.act ?? null)
   if (!a || a.del) return s
   const base = t !== old ? putTasks(s, [t], nowMs) : s
-  return start(base, a.id, nowMs, id)
+  return start(moveTask(base, id, t.d, 0, nowMs), a.id, nowMs, id)
+}
+
+/** Kleinste erlaubte Ablageposition an einem Tag: hinter dem laufenden Task (der ist oben fix). */
+export function minDropIndex(s: State, day: string): number {
+  const id = runningTask(s)
+  return id && findTask(s, id)?.d === day ? 1 : 0
 }
 
 /**

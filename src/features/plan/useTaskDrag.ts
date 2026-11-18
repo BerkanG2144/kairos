@@ -18,6 +18,8 @@ export type DragState = {
 type Opts = {
   band: RefObject<HTMLElement | null>
   canDrop: (day: string) => boolean
+  /** kleinste erlaubte Position an einem Tag (z. B. hinter dem laufenden Task) */
+  minIndex?: (day: string) => number
   onDrop: (id: string, day: string, index: number) => void
 }
 
@@ -27,17 +29,17 @@ const SLOP_MOUSE = 4
 const EDGE = 64
 
 /** Spalte und Einfügeposition unter dem Zeiger. Gezählt werden die Karten, deren Mitte über dem Zeiger liegt. */
-function targetAt(x: number, y: number, id: string, canDrop: (d: string) => boolean): { day: string | null; index: number } {
+function targetAt(x: number, y: number, id: string, o: Pick<Opts, 'canDrop' | 'minIndex'>): { day: string | null; index: number } {
   const col = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-plan-day]')
   const day = col?.dataset.planDay
-  if (!col || !day || !canDrop(day)) return { day: null, index: 0 }
+  if (!col || !day || !o.canDrop(day)) return { day: null, index: 0 }
   let index = 0
   for (const c of col.querySelectorAll<HTMLElement>('[data-task]')) {
     if (c.dataset.task === id) continue
     const r = c.getBoundingClientRect()
     if (r.top + r.height / 2 < y) index++
   }
-  return { day, index }
+  return { day, index: Math.max(index, o.minIndex?.(day) ?? 0) }
 }
 
 /**
@@ -73,7 +75,7 @@ export function useTaskDrag(opts: Opts) {
     const d = dragRef.current
     if (!d) return
     const { x, y } = pointer.current
-    set({ ...d, x, y, ...targetAt(x, y, d.id, optsRef.current.canDrop) })
+    set({ ...d, x, y, ...targetAt(x, y, d.id, optsRef.current) })
   }
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>, id: string) => {
@@ -114,7 +116,7 @@ export function useTaskDrag(opts: Opts) {
       started = true
       suppressClick.current = true
       const { x, y } = pointer.current
-      set({ id, x, y, offX: sx - card.left, offY: sy - card.top, w: card.width, h: card.height, ...targetAt(x, y, id, optsRef.current.canDrop) })
+      set({ id, x, y, offX: sx - card.left, offY: sy - card.top, w: card.width, h: card.height, ...targetAt(x, y, id, optsRef.current) })
       if (touch) navigator.vibrate?.(8)
       raf = requestAnimationFrame(autoScroll)
     }

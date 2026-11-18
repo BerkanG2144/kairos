@@ -62,22 +62,22 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
   await expect(page.getByRole('button', { name: 'Mathe', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('link', { name: 'Plan', exact: true }).click()
 
-  // umsortieren: Altklausur nach ganz oben
+  // umsortieren: Altklausur nach ganz oben – geht nur bis unter den laufenden Task
   const alt = today.locator('[data-task]', { hasText: 'Altklausur' })
   const top = (await blatt.boundingBox())!
   await dragTo(page, alt, top.x + 60, top.y + 4)
-  await expect.poll(() => titles(today)).toEqual(['Altklausur', 'Blatt 3', 'Skript lesen'])
+  await expect.poll(() => titles(today)).toEqual(['Blatt 3', 'Altklausur', 'Skript lesen'])
 
   // auf morgen verschieben
   const tb = (await tomorrow.boundingBox())!
   await dragTo(page, today.locator('[data-task]', { hasText: 'Skript lesen' }), tb.x + 100, tb.y + 140)
   await expect.poll(() => titles(tomorrow)).toEqual(['Skript lesen'])
-  expect(await titles(today)).toEqual(['Altklausur', 'Blatt 3'])
+  expect(await titles(today)).toEqual(['Blatt 3', 'Altklausur'])
 
   // in die Vergangenheit geht nicht
   const yb = (await col(page, '2026-11-17').boundingBox())!
   await dragTo(page, today.locator('[data-task]', { hasText: 'Altklausur' }), yb.x + 100, yb.y + 140)
-  expect(await titles(today)).toEqual(['Altklausur', 'Blatt 3'])
+  expect(await titles(today)).toEqual(['Blatt 3', 'Altklausur'])
 
   // abhaken stoppt den Timer, Zeit bleibt am Task
   await blatt.getByRole('checkbox', { name: 'Blatt 3 erledigt' }).click()
@@ -86,7 +86,7 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
   await expect(page).toHaveTitle('Kairos')
 
   await page.reload()
-  expect(await titles(col(page, '2026-11-18'))).toEqual(['Altklausur', 'Blatt 3'])
+  expect(await titles(col(page, '2026-11-18'))).toEqual(['Blatt 3', 'Altklausur'])
   expect(await titles(col(page, '2026-11-19'))).toEqual(['Skript lesen'])
 })
 
@@ -146,4 +146,32 @@ test('Plan zeigt die Stunden dieser Woche – gleich wie Home', async ({ page })
   expect(home).not.toMatch(/^0h 00m/)
   await page.getByRole('link', { name: 'Plan', exact: true }).click()
   await expect(page.getByTestId('plan-week')).toHaveText(home!)
+})
+
+test('Laufender Task rückt nach oben und ist dort fix', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/#plan')
+  await importBackup(page)
+  const today = col(page, '2026-11-18')
+  await add(page, '2026-11-18', '18.11.', 'A', 'B', 'C')
+  const c = today.locator('[data-task]', { hasText: /^C/ })
+  await c.hover()
+  await c.getByRole('button', { name: 'C starten' }).click()
+  await page.getByRole('menuitemradio', { name: 'Mathe' }).click()
+  await expect.poll(() => titles(today)).toEqual(['C', 'A', 'B'])
+
+  // die laufende Karte lässt sich nicht ziehen
+  const cb = (await c.boundingBox())!
+  const bb = (await today.locator('[data-task]', { hasText: /^B/ }).boundingBox())!
+  await page.mouse.move(cb.x + 30, cb.y + 12)
+  await page.mouse.down()
+  await page.mouse.move(bb.x + 40, bb.y + bb.height - 4, { steps: 6 })
+  await expect(page.getByTestId('task-ghost')).toHaveCount(0)
+  await page.mouse.up()
+  expect(await titles(today)).toEqual(['C', 'A', 'B'])
+
+  // gestoppt → wieder frei
+  await c.getByRole('button', { name: 'C stoppen' }).click()
+  await dragTo(page, today.locator('[data-task]', { hasText: /^B/ }), cb.x + 60, cb.y + 4)
+  await expect.poll(() => titles(today)).toEqual(['B', 'C', 'A'])
 })

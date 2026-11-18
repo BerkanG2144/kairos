@@ -5,7 +5,7 @@ import ui from '../../components/ui.module.css'
 import { planByDay } from '../../domain/plan.ts'
 import { byDay } from '../../domain/sessions.ts'
 import { longDayLabel, todayAndWeek } from '../../domain/summary.ts'
-import { addTask, findTask, moveOpenTask, runningTask, taskTimes, tasksOn, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
+import { addTask, findTask, minDropIndex, moveOpenTask, runningTask, taskTimes, tasksOn, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
 import { dayKey } from '../../domain/time.ts'
 import { actById, activeActs } from '../../domain/tracker.ts'
 import type { Task } from '../../domain/types.ts'
@@ -49,6 +49,7 @@ export function HomePage() {
   const { drag, onPointerDown, consumeClick } = useTaskDrag({
     band: list,
     canDrop: (d) => d === day,
+    minIndex: (d) => minDropIndex(state, d),
     onDrop: (id, d, i) => dispatch((s, n) => moveOpenTask(s, id, d, i, n)),
   })
 
@@ -79,7 +80,7 @@ export function HomePage() {
       onToggleDone={() => dispatch((s, n) => toggleTaskDone(s, t.id, n))}
       onTimer={(a) => dispatch((s, n) => toggleTaskTimer(s, t.id, n, a))}
       onSetAct={(a) => dispatch((s, n) => updateTask(s, t.id, { act: a }, n))}
-      onPointerDown={opts.draggable ? (e) => onPointerDown(e, t.id) : undefined}
+      onPointerDown={opts.draggable && running !== t.id ? (e) => onPointerDown(e, t.id) : undefined}
     />
   )
   const visible = drag ? open.filter((t) => t.id !== drag.id) : open
