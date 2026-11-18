@@ -32,6 +32,7 @@ export type ParsedBackup = {
   acts: number
   sessions: number
   items: number
+  tasks: number
   /** verworfene, unbrauchbare Einzeleinträge */
   skipped: number
 }
@@ -63,9 +64,11 @@ export function parseBackup(text: string, nowMs: number): ParseResult {
 
   let sessions = 0
   let items = 0
+  let tasks = 0
   for (const k in state.months) {
     sessions += state.months[k]!.s.length
     items += state.months[k]!.p?.length ?? 0
+    tasks += state.months[k]!.k?.length ?? 0
   }
   return {
     ok: true,
@@ -75,6 +78,7 @@ export function parseBackup(text: string, nowMs: number): ParseResult {
       acts: state.meta.acts.filter((a) => !a.del).length,
       sessions,
       items,
+      tasks,
       skipped: n.skipped,
     },
   }
@@ -85,5 +89,6 @@ export function importSummary(b: ParsedBackup): string {
   const w = b.exportedAt
   const when = w ? ` vom ${w.getDate()}. ${MONTHS_SHORT[w.getMonth()]} ${pad(w.getHours())}:${pad(w.getMinutes())}` : ''
   const skipped = b.skipped ? ` (${b.skipped} unlesbare Einträge übersprungen)` : ''
-  return `Backup${when} laden? ${b.acts} Fächer, ${b.sessions} Einträge${skipped} – ersetzt die aktuellen Daten.`
+  const tasks = b.tasks ? `, ${b.tasks} Tasks` : ''
+  return `Backup${when} laden? ${b.acts} Fächer, ${b.sessions} Einträge${tasks}${skipped} – ersetzt die aktuellen Daten.`
 }

@@ -3,6 +3,7 @@
  *
  * Version 1 = Legacy-Datei (meta.exams möglich).
  * Version 2 = exams → Plan-Items vom Typ 'klausur'.
+ * Version 3 = Wochenplan: Tasks (months[m].k), optional Task-ID an run (k), Sessions ([a,s,e,k]) und meta.lk.
  *
  * Regeln: Jede Schemaänderung bekommt eine neue Version + Migration + Test.
  * Migrationen müssen idempotent sein und dürfen keine Daten verlieren.
@@ -10,7 +11,7 @@
 import { findItem, saveItem } from './plan.ts'
 import type { PlanItem, State } from './types.ts'
 
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 type Migration = { to: number; up: (s: State, nowMs: number) => State }
 
@@ -28,7 +29,16 @@ export function migrateExams(s: State, nowMs: number): State {
   return { ...out, meta: { ...meta, u: nowMs } }
 }
 
-const MIGRATIONS: Migration[] = [{ to: 2, up: migrateExams }]
+/**
+ * v2 → v3: nur neue, optionale Felder – vorhandene Daten bleiben unverändert gültig.
+ * Eigene Version trotzdem, damit eine ältere App-Version ein v3-Backup als „neuer“ erkennt.
+ */
+export const migrateTasks = (s: State): State => s
+
+const MIGRATIONS: Migration[] = [
+  { to: 2, up: migrateExams },
+  { to: 3, up: migrateTasks },
+]
 
 /** Bringt einen (normalisierten) State von Version `from` auf SCHEMA_VERSION. */
 export function migrate(s: State, from: number, nowMs: number): State {

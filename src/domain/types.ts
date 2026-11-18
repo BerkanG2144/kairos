@@ -15,11 +15,11 @@ export type Act = {
   del?: true
 }
 
-/** Laufender Timer: Fach (oder Pause) und Start in Unix-Sekunden. */
-export type Run = { a: ActId; t: number }
+/** Laufender Timer: Fach (oder Pause), Start in Unix-Sekunden, optional der Task (v3). */
+export type Run = { a: ActId; t: number; k?: string }
 
-/** [Fach-ID, Start (s), Ende (s)] */
-export type Session = [a: ActId, start: number, end: number]
+/** [Fach-ID, Start (s), Ende (s), Task-ID (optional, v3)] */
+export type Session = [a: ActId, start: number, end: number, k?: string]
 
 export type PlanType = 'block' | 'abgabe' | 'klausur' | 'termin'
 
@@ -41,6 +41,19 @@ export type PlanItem = {
   g?: string
 }
 
+/** Aufgabe im Wochenplan (v3). Liegt im Monatsdokument ihres Tages. */
+export type Task = {
+  id: string
+  title: string
+  /** 'YYYY-MM-DD' */
+  d: string
+  /** Reihenfolge innerhalb des Tages (aufsteigend) */
+  o: number
+  /** Fach-ID → Farbe und Timer */
+  act?: ActId
+  done?: true
+}
+
 /** LEGACY: wird zu PlanItems vom Typ 'klausur' migriert. */
 export type LegacyExam = { id: string; name: string; d: string; t?: string }
 
@@ -52,6 +65,8 @@ export type Meta = {
   /** updated-at (ms) */
   u: number
   exams?: LegacyExam[]
+  /** zuletzt gelaufener Task (für „Weiter“ nach Pause), v3 */
+  lk?: string
 }
 
 /** 'YYYY-MM' */
@@ -60,6 +75,8 @@ export type MonthKey = string
 export type MonthDoc = {
   s: Session[]
   p?: PlanItem[]
+  /** Tasks des Wochenplans (v3) */
+  k?: Task[]
   u: number
 }
 

@@ -54,3 +54,20 @@ describe('Migration exams → klausur', () => {
     expect(migrate(s, SCHEMA_VERSION, 1)).toBe(s)
   })
 })
+
+describe('Migration v2 → v3 (Wochenplan)', () => {
+  it('lässt v2-Daten unverändert (nur neue optionale Felder)', () => {
+    const s: State = {
+      meta: { acts: [{ id: 'a', name: 'Mathe', c: '#fff' }], run: { a: 'a', t: 5 }, last: 'a', u: 1 },
+      months: { '2026-11': { s: [['a', 1, 2]], p: [{ id: 'p', type: 'termin', title: 'x', d: '2026-11-18' }], u: 1 } },
+    }
+    expect(SCHEMA_VERSION).toBe(3)
+    expect(migrate(s, 2, 99)).toBe(s)
+  })
+
+  it('v1 → v3 in einem Schritt', () => {
+    const out = migrate(withExams([{ id: 'e1', name: 'Ana', d: '2027-02-10' }]), 1, 7)
+    expect(out.meta.exams).toBeUndefined()
+    expect(allPlan(out).map((i) => i.title)).toEqual(['Ana'])
+  })
+})

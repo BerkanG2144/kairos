@@ -1,3 +1,4 @@
+import { SCHEMA_VERSION } from '../domain/migrate.ts'
 import { describe, expect, it, vi } from 'vitest'
 import { emptyState } from '../domain/state.ts'
 import { addAct, start, stop } from '../domain/tracker.ts'
@@ -40,7 +41,7 @@ describe('Store', () => {
 
     expect(fn).toHaveBeenCalledTimes(3)
     const saved = await storage.load()
-    expect(saved?.schema).toBe(2)
+    expect(saved?.schema).toBe(SCHEMA_VERSION)
     expect(saved?.state).toEqual(store.get())
     expect(saved?.state.months['2026-11']!.s).toEqual([[id, T / 1000, T / 1000 + 60]])
   })
@@ -67,7 +68,7 @@ describe('Store', () => {
     await store.flush()
     expect('exams' in store.get().meta).toBe(false)
     const saved = await storage.load()
-    expect(saved?.schema).toBe(2)
+    expect(saved?.schema).toBe(SCHEMA_VERSION)
     expect(saved?.state.months['2027-02']!.p).toHaveLength(1)
   })
 

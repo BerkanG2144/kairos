@@ -66,7 +66,7 @@ test('Ordner wählen → Änderungen landen automatisch im Ordner', async ({ pag
 
   await expect.poll(async () => Object.keys(await files(page)).sort()).toEqual(['kairos-2026-11-18.json', 'kairos-aktuell.json'])
   const current = JSON.parse((await files(page))['kairos-aktuell.json']!)
-  expect(current).toMatchObject({ app: 'lernzeit', format: 1, schema: 2 })
+  expect(current).toMatchObject({ app: 'lernzeit', format: 1, schema: 3 })
   expect(current.data.meta.acts.map((a: { name: string }) => a.name)).toEqual(['Mathe'])
   await expect(page.getByRole('button', { name: 'Gesichert' })).toBeVisible()
 

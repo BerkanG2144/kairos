@@ -1,3 +1,4 @@
+import { SCHEMA_VERSION } from './migrate.ts'
 import { describe, expect, it } from 'vitest'
 import { importSummary, makeBackup, parseBackup } from './backup.ts'
 import { normalizeState } from './normalize.ts'
@@ -113,7 +114,7 @@ describe('makeBackup', () => {
     const { filename, json } = makeBackup(state, new Date('2026-11-18T07:04:00'))
     expect(filename).toBe('kairos-backup-2026-11-18_0704.json')
     const o = JSON.parse(json)
-    expect(o).toMatchObject({ app: 'lernzeit', format: 1, schema: 2, exportedAt: '2026-11-18T06:04:00.000Z' })
+    expect(o).toMatchObject({ app: 'lernzeit', format: 1, schema: SCHEMA_VERSION, exportedAt: '2026-11-18T06:04:00.000Z' })
     const r = parseBackup(json, NOW + 1)
     expect(r.ok && r.backup.state).toEqual(state)
   })

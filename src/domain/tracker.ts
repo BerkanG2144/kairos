@@ -4,7 +4,7 @@
  */
 import { ACT_NAME_MAX, COLORS, PAUSE } from './constants.ts'
 import { monthKeyOfSec } from './time.ts'
-import type { Act, ActId, Meta, State } from './types.ts'
+import type { Act, ActId, Meta, Session, State } from './types.ts'
 
 const sec = (ms: number) => Math.floor(ms / 1000)
 
@@ -28,16 +28,23 @@ export function endRun(s: State, at: number, nowMs: number): State {
   if (end - r.t >= 1) {
     const k = monthKeyOfSec(r.t)
     const doc = months[k] ?? { s: [], u: 0 }
-    months = { ...months, [k]: { ...doc, s: [...doc.s, [r.a, r.t, end]], u: nowMs } }
+    const session: Session = r.k ? [r.a, r.t, end, r.k] : [r.a, r.t, end]
+    months = { ...months, [k]: { ...doc, s: [...doc.s, session], u: nowMs } }
   }
   return { months, meta: { ...s.meta, run: null, u: nowMs } }
 }
 
-/** Startet Fach oder Pause; ein laufender Timer wird vorher beendet. */
-export function start(s: State, a: ActId, nowMs: number): State {
+/**
+ * Startet Fach oder Pause; ein laufender Timer wird vorher beendet.
+ * Mit `task` läuft der Timer für diesen Task (Zeit wird ihm zugerechnet).
+ */
+export function start(s: State, a: ActId, nowMs: number, task?: string): State {
   const t = sec(nowMs)
   const ended = endRun(s, t, nowMs)
-  return withMeta(ended, { run: { a, t }, ...(a !== PAUSE ? { last: a } : {}) }, nowMs)
+  const run = task && a !== PAUSE ? { a, t, k: task } : { a, t }
+  if (a === PAUSE) return withMeta(ended, { run }, nowMs)
+  const { lk: _lk, ...meta } = ended.meta
+  return { ...ended, meta: { ...meta, run, last: a, ...(task ? { lk: task } : {}), u: nowMs } }
 }
 
 export function stop(s: State, nowMs: number): State {
@@ -58,7 +65,8 @@ export function clickAct(s: State, id: ActId, nowMs: number): State {
 export function clickPause(s: State, nowMs: number): State {
   if (s.meta.run?.a === PAUSE) {
     const last = actById(s, s.meta.last)
-    return last && !last.del ? start(s, last.id, nowMs) : stop(s, nowMs)
+    if (!last || last.del) return stop(s, nowMs)
+    return start(s, last.id, nowMs, resumableTask(s, last.id))
   }
   return start(s, PAUSE, nowMs)
 }
@@ -93,6 +101,17 @@ export function delAct(s: State, id: ActId, nowMs: number): State {
   const base = s.meta.run?.a === id ? endRun(s, sec(nowMs), nowMs) : s
   const acts = base.meta.acts.map((a): Act => (a.id === id ? { ...a, del: true } : a))
   return withMeta(base, { acts }, nowMs)
+}
+
+/** Task, mit dem „Weiter“ nach einer Pause fortsetzt: existiert noch, offen, gleiches Fach. */
+function resumableTask(s: State, act: ActId): string | undefined {
+  const id = s.meta.lk
+  if (!id) return undefined
+  for (const k in s.months) {
+    const t = s.months[k]!.k?.find((x) => x.id === id)
+    if (t) return !t.done && t.act === act ? id : undefined
+  }
+  return undefined
 }
 
 /** Aktive (nicht gelöschte) Fächer. */
