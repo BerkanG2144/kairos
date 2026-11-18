@@ -78,62 +78,6 @@
   text-align: right;
 }
 
-.weeksHead {
-  margin-top: 72px;
-}
-
-.weeks {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  margin-top: 24px;
-}
-
-.wcol {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.wstack {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-  width: 100%;
-  max-width: 44px;
-  height: 160px;
-}
-
-.wstack span {
-  width: 100%;
-  min-height: 0;
-  border-radius: 3px;
-}
-
-.wempty {
-  border-bottom: 1px solid var(--line);
-}
-
-.wl {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--dim);
-}
-
-.cur .wl {
-  color: var(--signal);
-}
-
-.wt {
-  height: 12px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--mute);
-}
-
 @media (max-width: 880px) {
   .stats {
     padding: 32px 20px 72px;
@@ -157,10 +101,9 @@
   .d {
     display: none;
   }
-  .weeks {
-    gap: 5px;
-  }
-  .wt {
-    display: none;
-  }
+}
+
+/* Tagesbilanz (Zeitraum „Heute“) */
+.day {
+  margin-top: 40px;
 }

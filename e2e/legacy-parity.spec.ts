@@ -9,7 +9,6 @@ test.skip(({ isMobile }) => isMobile, 'Vergleich einmal auf Desktop reicht')
 type Snapshot = {
   kpis: Record<string, string[]>
   rows: string[]
-  weeks: string[]
   day: string
   dayLegend: string
   week: string[]
@@ -31,7 +30,6 @@ async function legacySnapshot(page: Page): Promise<Snapshot> {
     kpis[r] = await page.evaluate(() => ['#sTotal', '#sDays', '#sAvg', '#sStreak', '#sBest'].map((s) => document.querySelector(s)!.textContent!.replace('· Rekord ', '')))
   }
   const rows = (await page.locator('#sRows .srow').allInnerTexts()).map(norm)
-  const weeks = await page.locator('#sWeeks .wcol').evaluateAll((els) => els.map((e) => (e as HTMLElement).title))
   await page.evaluate(() => (location.hash = ''))
   await page.click('#dPrev') // gestern (letzter Tag im Backup)
   const day = (await page.textContent('#dTotal'))!
@@ -44,7 +42,7 @@ async function legacySnapshot(page: Page): Promise<Snapshot> {
   const weekLegend = norm(await page.innerText('#legend'))
   await page.evaluate(() => (location.hash = '#organisation'))
   const side = await Promise.all(['#oToday', '#oDue', '#oExams'].map(async (s) => norm(await page.innerText(s))))
-  return { kpis, rows, weeks, day, dayLegend, week, weekLegend, side }
+  return { kpis, rows, day, dayLegend, week, weekLegend, side }
 }
 
 async function appSnapshot(page: Page): Promise<Snapshot> {
@@ -59,7 +57,6 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
   }
   const main = page.getByRole('main')
   const rows = (await main.locator('> div:nth-of-type(3) > div').allInnerTexts()).map(norm)
-  const weeks = await main.locator('[title^="KW "]').evaluateAll((els) => els.map((e) => (e as HTMLElement).title))
   await page.getByRole('link', { name: 'Tracker' }).click()
   await page.getByRole('button', { name: 'Voriger Tag' }).click()
   const day = (await page.getByTestId('day-total').textContent())!
@@ -78,7 +75,7 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
       return norm((await region.innerText()).replace(label, ''))
     }),
   )
-  return { kpis, rows, weeks, day, dayLegend, week, weekLegend, side }
+  return { kpis, rows, day, dayLegend, week, weekLegend, side }
 }
 
 test('Tracker, Statistik und Organisation zeigen dieselben Zahlen wie die Legacy-Datei', async ({ browser }) => {

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { expectNoHorizontalScroll, freezeAt, NOW, revealRemove } from './helpers.ts'
+import { expectNoHorizontalScroll, freezeAt, importBackup, NOW, revealRemove } from './helpers.ts'
 
 const NOW_PLUS = (min: number) => NOW.getTime() + min * 60_000
 
@@ -92,4 +92,29 @@ test('Lücken-Erkennung: Seite war zu → rückwirkend stoppen', async ({ page }
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByRole('timer')).toHaveText('00:00:00')
   await expect(page.getByTestId('day-total')).toHaveText('10m')
+})
+
+test('Statistik: „Heute“ zeigt die Tagesbilanz, kein Wochen-Diagramm mehr', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/#statistik')
+  await importBackup(page)
+  await expect(page.getByText('Letzte 12 Wochen')).toHaveCount(0)
+  const seg = page.getByRole('group', { name: 'Zeitraum' })
+  await seg.getByRole('button', { name: 'Heute' }).click()
+  const day = page.getByRole('region', { name: 'Tagesbilanz' })
+  await expect(day).toBeVisible()
+  await expect(page.getByTestId('kpi-total')).toHaveCount(0)
+  // gleiche Zahl wie im Tracker
+  const total = await day.getByTestId('day-total').textContent()
+  await day.getByRole('button', { name: 'Voriger Tag' }).click()
+  const yesterday = await day.getByTestId('day-total').textContent()
+  await page.getByRole('link', { name: 'Tracker' }).click()
+  await expect(page.getByTestId('day-total')).toHaveText(total!)
+  await page.getByRole('button', { name: 'Voriger Tag' }).click()
+  await expect(page.getByTestId('day-total')).toHaveText(yesterday!)
+  // Auswahl „Heute“ bleibt gemerkt
+  await page.getByRole('link', { name: 'Statistik' }).click()
+  await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toBeVisible()
+  await seg.getByRole('button', { name: '7 Tage' }).click()
+  await expect(page.getByTestId('kpi-total')).toBeVisible()
 })

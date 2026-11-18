@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { daysLabel, hoursLabel, lastWeeks, rangeStats, streaks } from './stats.ts'
+import { daysLabel, rangeStats, streaks } from './stats.ts'
 import { dayKey } from './time.ts'
 import type { Act, ByDay } from './types.ts'
 
@@ -69,6 +69,12 @@ describe('rangeStats', () => {
       avg: 2715,
     })
   })
+  it('Heute: nur der heutige Tag', () => {
+    const r = rangeStats(byDay, 'day', today, acts)
+    expect(r.total).toBe(Object.entries(byDay[dayKey(today)] ?? {}).filter(([a]) => a !== PAUSE).reduce((s, [, v]) => s + v, 0))
+    expect(r.studyDays).toBeLessThanOrEqual(1)
+  })
+
   it('30 Tage / Jahr / Gesamt', () => {
     expect(rangeStats(byDay, '30', today, acts)).toMatchObject({ total: 12630, studyDays: 3 })
     expect(rangeStats(byDay, '365', today, acts)).toMatchObject({ total: 12730, studyDays: 4 })
@@ -79,30 +85,7 @@ describe('rangeStats', () => {
   })
 })
 
-describe('lastWeeks', () => {
-  it('12 Wochen, älteste zuerst, aktuelle markiert, Pause ignoriert', () => {
-    const byDay: ByDay = { '2026-11-16': { a: 3600, [PAUSE]: 500 }, '2026-11-22': { b: 1800 }, '2026-08-31': { a: 100 }, '2026-08-30': { a: 100 } }
-    const { weeks, max } = lastWeeks(byDay, today, acts)
-    expect(weeks).toHaveLength(12)
-    expect(dayKey(weeks[0]!.monday)).toBe('2026-08-31')
-    expect(weeks[0]!.total).toBe(100) // 30.08. liegt davor
-    expect(weeks[11]).toMatchObject({ kw: 47, total: 5400, current: true })
-    expect(weeks[11]!.segs.map((s) => s.id)).toEqual(['a', 'b'])
-    expect(weeks.filter((w) => w.current)).toHaveLength(1)
-    expect(max).toBe(5400)
-  })
-  it('Maßstab mindestens 1 h', () => {
-    expect(lastWeeks({}, today, acts).max).toBe(3600)
-  })
-})
-
 describe('Labels', () => {
-  it('hoursLabel', () => {
-    expect(hoursLabel(59)).toBe('')
-    expect(hoursLabel(60)).toBe('0h')
-    expect(hoursLabel(38520)).toBe('10.7h')
-    expect(hoursLabel(3600)).toBe('1h')
-  })
   it('daysLabel', () => {
     expect(daysLabel(1)).toBe('1 Tag')
     expect(daysLabel(0)).toBe('0 Tage')
