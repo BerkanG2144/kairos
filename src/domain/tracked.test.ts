@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
 import { emptyState } from './state.ts'
-import { trackedByDay } from './tracked.ts'
+import { deleteTracked, trackedByDay } from './tracked.ts'
 import { monthKeyOfSec } from './time.ts'
 import type { Session, State } from './types.ts'
 
@@ -89,5 +89,39 @@ describe('trackedByDay', () => {
 
   it('Tage ohne Einträge sind leere Listen', () => {
     expect(trackedByDay(emptyState(), ['2026-11-18', '2026-11-19'], 0)).toEqual({ '2026-11-18': [], '2026-11-19': [] })
+  })
+})
+
+describe('deleteTracked', () => {
+  const all = (s: State) => Object.values(s.months).flatMap((m) => m.s)
+
+  it('löscht genau die zusammengefassten Sessions des Blocks, sonst nichts', () => {
+    const s = st([
+      ['p', at('2026-11-18T09:00:00'), at('2026-11-18T10:00:00')], // anderes Fach direkt davor
+      ['m', at('2026-11-18T10:00:00'), at('2026-11-18T10:30:00'), 't1'],
+      ['m', at('2026-11-18T10:30:40'), at('2026-11-18T11:00:00'), 't1'],
+      ['m', at('2026-11-18T11:00:00'), at('2026-11-18T11:20:00')], // gleiches Fach ohne Task direkt danach
+      ['m', at('2026-11-18T14:00:00'), at('2026-11-18T15:00:00'), 't1'], // späterer Block
+    ])
+    const b = trackedByDay(s, ['2026-11-18'], 0)['2026-11-18']!.find((x) => x.k === 't1')!
+    expect([b.start, b.end]).toEqual([at('2026-11-18T10:00:00'), at('2026-11-18T11:00:00')])
+    const r = deleteTracked(s, b, 9)
+    expect(all(r).map((x) => [x[0], x[3]])).toEqual([
+      ['p', undefined],
+      ['m', undefined],
+      ['m', 't1'],
+    ])
+    expect(r.months['2026-11']!.u).toBe(9)
+  })
+
+  it('über Monatsgrenze: Block am 1. enthält den Teil aus dem Vormonat; löschen trifft beide Monate', () => {
+    const s = st([
+      ['m', at('2026-11-30T23:40:00'), at('2026-11-30T23:59:50')],
+      ['m', at('2026-12-01T00:00:10'), at('2026-12-01T00:30:00')],
+    ])
+    const b = trackedByDay(s, ['2026-12-01'], 0)['2026-12-01']![0]!
+    expect([b.s, b.start]).toEqual([0, at('2026-11-30T23:40:00')])
+    expect(all(deleteTracked(s, b, 1))).toEqual([])
+    expect(deleteTracked(s, { a: 'x', start: 0, end: 1 }, 1)).toBe(s)
   })
 })

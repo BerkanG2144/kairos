@@ -1,14 +1,18 @@
-import { useLayoutEffect, useRef, type HTMLAttributes } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } from 'react'
 import { cx, vars } from '../../components/cx.ts'
 import { layoutSpans, type Placed } from '../../domain/lanes.ts'
 import { isTimed, itemColor, sortItems } from '../../domain/plan.ts'
 import { WEEKDAYS_SHORT } from '../../domain/summary.ts'
-import { addDays, dayKey, fromMin, pad, toMin } from '../../domain/time.ts'
+import { findTask, taskTimes } from '../../domain/tasks.ts'
+import { addDays, dayKey, fromMin, nowSec, pad, toMin } from '../../domain/time.ts'
 import type { Tracked } from '../../domain/tracked.ts'
 import type { Act, PlanItem } from '../../domain/types.ts'
 import { Chip } from './Chip.tsx'
 import { H0, H1, minToPx, PX } from './grid.ts'
 import type { OrgActions } from './types.ts'
+import { useAppState } from '../../state/StoreProvider.tsx'
+import { TaskEditor } from '../plan/TaskEditor.tsx'
+import { TrackedPopover } from './TrackedPopover.tsx'
 import { useBlockDrag } from './useBlockDrag.tsx'
 import styles from './WeekView.module.css'
 
@@ -30,23 +34,76 @@ type Entry = { kind: 'plan'; it: PlanItem } | { kind: 'track'; t: Tracked }
 
 const clock = (m: number) => (m >= 1440 ? '24:00' : fromMin(Math.floor(m)))
 
-/** Getrackte Zeit: schraffiert in der Fachfarbe, wächst live mit, solange der Timer läuft. */
+/** Verzögerung beim Öffnen/Schließen der Hover-Karte (kein Flackern beim Drüberfahren). */
+const HOVER_OPEN_MS = 120
+const HOVER_CLOSE_MS = 180
+
+/**
+ * Getrackte Zeit: schraffiert in der Fachfarbe, wächst live mit, solange der Timer läuft.
+ * Beim Hovern (oder Fokus) erscheint eine Karte mit Details, Löschen bzw. Stoppen.
+ */
 export function TrackedBlock({ t, lane, n, name, color }: { t: Tracked; lane: number; n: number; name: string; color: string }) {
+  const state = useAppState()
+  const ref = useRef<HTMLDivElement>(null)
+  const timer = useRef<number | undefined>(undefined)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<string | null>(null)
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  const later = (v: boolean, ms: number) => {
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => setOpen(v), ms)
+  }
+  const keep = useCallback(() => window.clearTimeout(timer.current), [])
+  const leave = useCallback(() => later(false, HOVER_CLOSE_MS), [])
+  const close = useCallback(() => {
+    window.clearTimeout(timer.current)
+    setOpen(false)
+  }, [])
+
   const top = Math.max(0, minToPx(t.s))
   const h = Math.max(14, ((t.e - Math.max(t.s, H0 * 60)) / 60) * PX - 2)
   const w = 100 / n
   const time = `${clock(t.s)}–${t.live ? 'jetzt' : clock(t.e)}`
+  const editTask = editing ? findTask(state, editing) : undefined
   return (
-    <div
-      className={cx(styles.trk, t.live && styles.live)}
-      style={{ ...vars({ '--c': color }), top, height: h, left: `calc(${w * lane}% + 2px)`, width: `calc(${w}% - 4px)` }}
-      title={`Getrackt: ${name} · ${time}`}
-      aria-label={`Getrackt: ${name} ${time}`}
-      data-tracked={t.live ? 'live' : 'done'}
-    >
-      <b>{name}</b>
-      <span>{time}</span>
-    </div>
+    <>
+      <div
+        ref={ref}
+        tabIndex={0}
+        className={cx(styles.trk, t.live && styles.live, open && styles.hot)}
+        style={{ ...vars({ '--c': color }), top, height: h, left: `calc(${w * lane}% + 2px)`, width: `calc(${w}% - 4px)` }}
+        aria-label={`Getrackt: ${name} ${time}`}
+        data-tracked={t.live ? 'live' : 'done'}
+        onMouseEnter={() => later(true, HOVER_OPEN_MS)}
+        onMouseLeave={leave}
+        onFocus={() => later(true, 0)}
+        onBlur={(e) => {
+          if (!(e.relatedTarget instanceof Node && document.querySelector('[data-tracked-pop]')?.contains(e.relatedTarget))) leave()
+        }}
+      >
+        <b>{name}</b>
+        <span>{time}</span>
+      </div>
+      {open && ref.current && (
+        <TrackedPopover
+          t={t}
+          anchor={ref.current}
+          onEnter={keep}
+          onLeave={leave}
+          onClose={close}
+          onOpenTask={(id) => {
+            close()
+            setEditing(id)
+          }}
+        />
+      )}
+      {editTask && (
+        // Klicks im Dialog nicht an die Kalenderspalte weiterreichen (würden sonst einen Eintrag anlegen)
+        <span style={{ display: 'contents' }} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+          <TaskEditor task={editTask} time={taskTimes(state, nowSec())[editTask.id] ?? 0} onClose={() => setEditing(null)} />
+        </span>
+      )}
+    </>
   )
 }
 

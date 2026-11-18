@@ -45,12 +45,13 @@ export function trackedByDay(s: State, days: string[], nowSec: number): Record<s
   const to = addDays(parseDayKey(sorted.at(-1)!), 1).getTime() / 1000
 
   // Sessions starten im Monat ihres Starts – den Vormonat mitnehmen (über Monatsgrenzen laufende Sessions).
-  const months = new Set([monthKeyOfSec(from - 86400 * 31), ...days.map((d) => d.slice(0, 7))])
+  const months = new Set([monthKeyOfSec(from - 1), monthKeyOfSec(from - 86400 * 31), ...days.map((d) => d.slice(0, 7))])
   type Raw = { a: ActId; k?: string; start: number; end: number; live: boolean }
   const raw: Raw[] = []
   for (const mk of months)
     for (const [a, st, en, k] of s.months[mk]?.s ?? []) {
-      if (a === PAUSE || en <= from || st >= to) continue
+      // auch Sessions kurz vor dem Zeitraum: sie können mit einem Block darin verschmelzen
+      if (a === PAUSE || en < from - 86400 || st >= to) continue
       raw.push({ a, ...(k ? { k } : {}), start: st, end: en, live: false })
     }
   const r = s.meta.run
@@ -87,4 +88,20 @@ export function trackedByDay(s: State, days: string[], nowSec: number): Record<s
     out[day] = list
   }
   return out
+}
+
+/**
+ * Löscht einen beendeten Block: alle Sessions mit gleichem Fach und Task, die ganz in seinem
+ * Zeitraum liegen (genau die, aus denen er zusammengesetzt ist – auch über Mitternacht/Monatsgrenze).
+ */
+export function deleteTracked(s: State, b: Pick<Tracked, 'a' | 'k' | 'start' | 'end'>, nowMs: number): State {
+  const first = monthKeyOfSec(b.start)
+  const last = monthKeyOfSec(b.end)
+  let months = s.months
+  for (const [mk, doc] of Object.entries(s.months)) {
+    if (mk < first || mk > last) continue
+    const keep = doc.s.filter(([a, st, en, k]) => !(a === b.a && k === b.k && st >= b.start && en <= b.end))
+    if (keep.length !== doc.s.length) months = { ...months, [mk]: { ...doc, s: keep, u: nowMs } }
+  }
+  return months === s.months ? s : { ...s, months }
 }

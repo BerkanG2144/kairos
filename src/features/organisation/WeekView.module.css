@@ -185,6 +185,18 @@
   white-space: nowrap;
 }
 
+.trk {
+  cursor: default;
+  transition: border-color 0.15s;
+}
+
+/* Hover-Karte offen */
+.hot,
+.trk:focus-visible {
+  border-color: var(--c);
+  outline: none;
+}
+
 /* Läuft gerade: kräftiger Rand, unten pulsierende Kante */
 .live {
   border-color: var(--c);
