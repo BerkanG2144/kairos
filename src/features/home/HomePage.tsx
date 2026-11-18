@@ -1,11 +1,12 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cx } from '../../components/cx.ts'
+import { Hours } from '../../components/Hours.tsx'
 import ui from '../../components/ui.module.css'
 import { planByDay } from '../../domain/plan.ts'
 import { byDay } from '../../domain/sessions.ts'
 import { longDayLabel, todayAndWeek } from '../../domain/summary.ts'
 import { addTask, findTask, moveOpenTask, runningTask, taskTimes, tasksOn, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
-import { dayKey, pad } from '../../domain/time.ts'
+import { dayKey } from '../../domain/time.ts'
 import { actById, activeActs } from '../../domain/tracker.ts'
 import type { Task } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
@@ -21,17 +22,6 @@ type Where = 'top' | 'bottom'
 const isWhere = (x: unknown): x is Where => x === 'top' || x === 'bottom'
 type DoneView = 'open' | 'closed'
 const isDoneView = (x: unknown): x is DoneView => x === 'open' || x === 'closed'
-
-/** „2h 05m“ mit großen Zahlen */
-function Hm({ sec }: { sec: number }) {
-  const h = Math.floor(sec / 3600)
-  const m = Math.floor((sec % 3600) / 60)
-  return (
-    <>
-      <b>{h}</b>h <b>{pad(m)}</b>m
-    </>
-  )
-}
 
 export function HomePage() {
   const state = useAppState()
@@ -101,13 +91,9 @@ export function HomePage() {
     <main className={styles.page}>
       <div className={styles.head}>
         <h1 className={styles.date}>{longDayLabel(today)}</h1>
-        <div className={styles.totals}>
-          <div className={styles.today} data-testid="home-today">
-            <Hm sec={totals.today} /> <span>heute</span>
-          </div>
-          <div className={styles.week} data-testid="home-week">
-            <Hm sec={totals.week} /> diese Woche
-          </div>
+        <div>
+          <Hours sec={totals.today} label="heute" testId="home-today" />
+          <Hours sec={totals.week} label="diese Woche" small testId="home-week" />
         </div>
       </div>
 

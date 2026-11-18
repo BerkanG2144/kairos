@@ -18,6 +18,12 @@
   gap: 18px;
 }
 
+.headR {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
 .month {
   font-size: 15px;
   color: var(--text);

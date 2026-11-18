@@ -136,3 +136,14 @@ test('Navigationsleiste steht auf allen Seiten an derselben Stelle', async ({ pa
   }
   expect(new Set(pos).size).toBe(1)
 })
+
+test('Plan zeigt die Stunden dieser Woche – gleich wie Home', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/')
+  await importBackup(page)
+  const home = await page.getByTestId('home-week').textContent()
+  expect(home).toMatch(/^\d+h \d\dm diese Woche$/)
+  expect(home).not.toMatch(/^0h 00m/)
+  await page.getByRole('link', { name: 'Plan', exact: true }).click()
+  await expect(page.getByTestId('plan-week')).toHaveText(home!)
+})

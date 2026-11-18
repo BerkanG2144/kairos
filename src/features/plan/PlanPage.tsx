@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cx } from '../../components/cx.ts'
+import { Hours } from '../../components/Hours.tsx'
 import ui from '../../components/ui.module.css'
 import { MONTHS } from '../../domain/constants.ts'
-import { WEEKDAYS_SHORT } from '../../domain/summary.ts'
+import { byDay as sessionsByDay } from '../../domain/sessions.ts'
+import { todayAndWeek, WEEKDAYS_SHORT } from '../../domain/summary.ts'
 import { addTask, findTask, moveTask, runningTask, taskTimes, tasksByDay, toggleTaskDone, toggleTaskTimer, updateTask } from '../../domain/tasks.ts'
 import { addDays, dayKey, parseDayKey } from '../../domain/time.ts'
 import { actById, activeActs } from '../../domain/tracker.ts'
@@ -46,6 +48,7 @@ export function PlanPage() {
   const byDay = useMemo(() => tasksByDay(state), [state])
   const times = useMemo(() => taskTimes(state, now), [state, now])
   const acts = activeActs(state)
+  const week = useMemo(() => todayAndWeek(sessionsByDay(state, now), new Date(now * 1000)).week, [state, now])
 
   const { drag, onPointerDown, consumeClick } = useTaskDrag({
     band,
@@ -137,9 +140,12 @@ export function PlanPage() {
             {MONTHS[m.getMonth()]} {m.getFullYear()}
           </span>
         </div>
-        <button type="button" className={styles.todayBtn} onClick={() => scrollToToday(true)}>
-          Heute
-        </button>
+        <div className={styles.headR}>
+          <Hours sec={week} label="diese Woche" testId="plan-week" />
+          <button type="button" className={styles.todayBtn} onClick={() => scrollToToday(true)}>
+            Heute
+          </button>
+        </div>
       </div>
 
       <div ref={band} className={cx(styles.band, drag && styles.dragging)} onScroll={onScroll} data-testid="plan-band">
