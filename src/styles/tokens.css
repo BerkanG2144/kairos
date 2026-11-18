@@ -1,0 +1,28 @@
+/* Design-Tokens – die einzigen globalen Werte. Komponenten nutzen CSS Modules. */
+:root {
+  --bg: #0c0d11;
+  --panel: #14161c;
+  --panel2: #1b1e25;
+  --line: #23262e;
+  --line2: #353945;
+  --text: #e9e6df;
+  --mute: #777b86;
+  --dim: #3e424c;
+
+  --signal: #f1e2a2; /* gelb: Akzent / heute */
+  --mint-rgb: 169, 229, 200; /* Lerntage, mit variabler Deckkraft */
+  --mint: rgb(var(--mint-rgb));
+  --pause: #b9b6c9;
+  --urgent: #f2a9bd; /* dringend / überfällig */
+
+  --font-text: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --label-size: 11px;
+  --label-spacing: 0.24em;
+
+  --w-narrow: 1120px; /* Tracker / Statistik */
+  --w-wide: 1640px; /* Organisation */
+  --sidebar: 360px;
+  --bp-mobile: 880px; /* nur Doku – Media Queries brauchen den Wert literal */
+}
