@@ -103,25 +103,31 @@ export function delAct(s: State, id: ActId, nowMs: number): State {
   return withMeta(base, { acts }, nowMs)
 }
 
-/** Task, mit dem „Weiter“ nach einer Pause fortsetzt: existiert noch, offen, gleiches Fach. */
-function resumableTask(s: State, act: ActId): string | undefined {
-  const id = s.meta.lk
+// Tasks werden hier nur gelesen; die Task-Aktionen stehen in tasks.ts (das tracker.ts importiert).
+function taskById(s: State, id: string | undefined) {
   if (!id) return undefined
   for (const k in s.months) {
     const t = s.months[k]!.k?.find((x) => x.id === id)
-    if (t) return !t.done && t.act === act ? id : undefined
+    if (t) return t
   }
   return undefined
+}
+
+/** Task, mit dem „Weiter“ nach einer Pause fortsetzt: existiert noch, offen, gleiches Fach. */
+function resumableTask(s: State, act: ActId): string | undefined {
+  const t = taskById(s, s.meta.lk)
+  return t && !t.done && t.act === act ? t.id : undefined
 }
 
 /** Aktive (nicht gelöschte) Fächer. */
 export const activeActs = (s: State): Act[] => s.meta.acts.filter((a) => !a.del)
 
-/** Name und Farbe (CSS-Wert) dessen, was gerade läuft. */
-export function runInfo(s: State): { name: string; color: string; isPause: boolean } | null {
+/** Name und Farbe (CSS-Wert) dessen, was gerade läuft; bei einem Task auch sein Titel. */
+export function runInfo(s: State): { name: string; color: string; isPause: boolean; task?: string } | null {
   const r = s.meta.run
   if (!r) return null
   if (r.a === PAUSE) return { name: 'Pause', color: 'var(--pause)', isPause: true }
   const a = actById(s, r.a)
-  return { name: a ? a.name : '—', color: a ? a.c : 'var(--mute)', isPause: false }
+  const task = taskById(s, r.k)?.title
+  return { name: a ? a.name : '—', color: a ? a.c : 'var(--mute)', isPause: false, ...(task ? { task } : {}) }
 }

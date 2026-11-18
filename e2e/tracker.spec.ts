@@ -5,7 +5,7 @@ const NOW_PLUS = (min: number) => NOW.getTime() + min * 60_000
 
 test('Fach anlegen → Timer → Pause → Weiter → Neuladen läuft weiter', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   const timer = page.getByRole('timer')
   await expect(timer).toHaveText('00:00:00')
 
@@ -45,7 +45,7 @@ test('Fach anlegen → Timer → Pause → Weiter → Neuladen läuft weiter', a
 
 test('Fach löschen mit Bestätigung, gleicher Name reaktiviert', async ({ page, isMobile }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   await page.getByRole('button', { name: 'Fach hinzufügen' }).click()
   await page.getByLabel('Neues Fach').fill('Physik')
   await page.keyboard.press('Enter')
@@ -76,7 +76,7 @@ test('Fach löschen mit Bestätigung, gleicher Name reaktiviert', async ({ page,
 
 test('Lücken-Erkennung: Seite war zu → rückwirkend stoppen', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   await page.getByRole('button', { name: 'Fach hinzufügen' }).click()
   await page.getByLabel('Neues Fach').fill('Info')
   await page.keyboard.press('Enter')
@@ -86,7 +86,7 @@ test('Lücken-Erkennung: Seite war zu → rückwirkend stoppen', async ({ page }
   // Seite „schließen“ und 20 min später wieder öffnen
   await page.goto('about:blank')
   await page.clock.setSystemTime(new Date(NOW_PLUS(30)))
-  await page.goto('/')
+  await page.goto('/#tracker')
   await expect(page.getByRole('alert')).toContainText('Seite war 20 Min. zu – der Timer lief weiter.')
   await page.getByRole('button', { name: 'Um 15:10 stoppen' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)

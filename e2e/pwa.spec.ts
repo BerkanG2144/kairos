@@ -5,7 +5,7 @@ test.use({ serviceWorkers: 'allow' })
 test.skip(({ isMobile }) => isMobile, 'Offline-Verhalten ist unabhängig von der Bildschirmgröße')
 
 test('Manifest und Icons sind erreichbar', async ({ page, request }) => {
-  await page.goto('/')
+  await page.goto('/#tracker')
   const href = await page.locator('link[rel="manifest"]').getAttribute('href')
   expect(href).toBeTruthy()
   const res = await request.get(new URL(href!, page.url()).href)
@@ -22,7 +22,7 @@ test('Manifest und Icons sind erreichbar', async ({ page, request }) => {
 })
 
 test('App startet offline mit gespeicherten Daten', async ({ page, context }) => {
-  await page.goto('/')
+  await page.goto('/#tracker')
   // Warten, bis der Service Worker aktiv ist und die App-Shell vorgeladen hat.
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready

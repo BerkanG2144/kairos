@@ -4,7 +4,7 @@ import { expectNoHorizontalScroll, freezeAt, importBackup } from './helpers.ts'
 
 test('Import des Legacy-Backups, alle Seiten ohne horizontales Scrollen', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   await page.getByTestId('import-file').setInputFiles('e2e/fixtures/backup-legacy.json')
   await expect(page.getByRole('alert')).toHaveText(/Backup vom 17\. Nov 21:15 laden\? 4 Fächer, 220 Einträge – ersetzt die aktuellen Daten\./)
   await page.getByRole('button', { name: 'Importieren' }).click()
@@ -32,7 +32,7 @@ test('Import des Legacy-Backups, alle Seiten ohne horizontales Scrollen', async 
 
 test('Ungültige Datei wird abgelehnt, Daten bleiben', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   await importBackup(page)
   await page.getByTestId('import-file').setInputFiles({ name: 'kaputt.json', mimeType: 'application/json', buffer: Buffer.from('{"foo":1}') })
   await expect(page.getByRole('button', { name: 'Ungültige Datei' })).toBeVisible()
@@ -42,7 +42,7 @@ test('Ungültige Datei wird abgelehnt, Daten bleiben', async ({ page }) => {
 
 test('Export → Import ergibt denselben Stand', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
   await importBackup(page)
   const dl = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Backup', exact: true }).click()

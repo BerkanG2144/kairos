@@ -48,7 +48,7 @@ const files = (page: Page) => page.evaluate(() => (window as unknown as { __file
 test('Ordner wählen → Änderungen landen automatisch im Ordner', async ({ page }) => {
   await freezeAt(page)
   await mockFolderPicker(page)
-  await page.goto('/')
+  await page.goto('/#tracker')
 
   await page.getByRole('button', { name: 'Auto-Sicherung' }).click()
   const dialog = page.getByRole('dialog', { name: 'Ordner-Sicherung' })

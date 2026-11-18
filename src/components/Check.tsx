@@ -1,7 +1,7 @@
-import { cx, vars } from '../../components/cx.ts'
+import { cx, vars } from './cx.ts'
 import styles from './Check.module.css'
 
-/** Checkbox für Abgaben (Farbe über --c). */
+/** Checkbox (Abgaben, Tasks); Farbe über --c. */
 export function Check({ on, color, onToggle, small, label }: { on: boolean; color: string; onToggle: () => void; small?: boolean; label: string }) {
   return (
     <button

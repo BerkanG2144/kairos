@@ -3,7 +3,7 @@ import ui from '../../components/ui.module.css'
 import { dueItems, examRows, todayItems, whenLabel } from '../../domain/agenda.ts'
 import { allPlan, isTimed, itemColor, TYPES } from '../../domain/plan.ts'
 import type { Act, PlanItem, State } from '../../domain/types.ts'
-import { Check } from './Check.tsx'
+import { Check } from '../../components/Check.tsx'
 import styles from './Sidebar.module.css'
 import type { OrgActions } from './types.ts'
 

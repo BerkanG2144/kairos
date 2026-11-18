@@ -41,7 +41,8 @@ Fach-Farben (Reihenfolge der Vergabe):
 - Labels: 11 px, Großbuchstaben, letter-spacing .24em, `--mute`.
 - Tracker/Statistik: max-width ~1120 px. Organisation: breiter (~1640 px), Schrift ~2 px größer,
   Seitenleiste 360 px mit Trennlinie. Berkan legt Wert darauf, dass es dort nicht gequetscht wirkt.
-- Mobile ab < 880 px: einspaltig; in Organisation steht die Seitenleiste oben.
+- **Nur Desktop/Laptop.** Handy wird nicht unterstützt (Berkans Entscheidung): keine neuen mobilen
+  Layouts, Touch-Gesten oder Handy-Tests. Vorhandenes mobiles CSS darf bleiben, wird aber nicht gepflegt.
 
 ## Datenmodell (muss kompatibel zum Legacy-Backup bleiben)
 

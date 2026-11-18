@@ -10,7 +10,7 @@ export function TimerTitle() {
   const run = state.meta.run
   const info = runInfo(state)
   const now = useNow(!!run)
-  const title = run && info ? `${clockStr(Math.max(0, now - run.t))} · ${info.name}` : 'Kairos'
+  const title = run && info ? `${clockStr(Math.max(0, now - run.t))} · ${info.task ?? info.name}` : 'Kairos'
   useEffect(() => {
     document.title = title
   }, [title])

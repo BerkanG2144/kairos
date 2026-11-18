@@ -7,6 +7,7 @@ import styles from './Header.module.css'
 import { hrefOf, navigate, type Route } from './route.ts'
 
 const TABS: { r: Route; label: string }[] = [
+  { r: 'plan', label: 'Plan' },
   { r: 'tracker', label: 'Tracker' },
   { r: 'statistik', label: 'Statistik' },
   { r: 'organisation', label: 'Organisation' },
@@ -23,7 +24,7 @@ function MiniTimer() {
     <button type="button" className={styles.mini} onClick={() => navigate('tracker')} title="Zum Tracker">
       <span className={styles.dot} style={{ background: info.color }} />
       <span>
-        {clockStr(Math.max(0, now - run.t))} · {info.name}
+        {clockStr(Math.max(0, now - run.t))} · {info.task ?? info.name}
       </span>
     </button>
   )

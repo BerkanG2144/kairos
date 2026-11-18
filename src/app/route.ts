@@ -1,18 +1,19 @@
 import { useSyncExternalStore } from 'react'
 
-export type Route = 'tracker' | 'statistik' | 'organisation'
+export type Route = 'plan' | 'tracker' | 'statistik' | 'organisation'
 
-/** '#statistik', '#organisation' (alt: '#klausuren'), sonst Tracker – wie Legacy. */
+/** '#tracker', '#statistik', '#organisation' (alt: '#klausuren'), sonst Plan (Startseite). */
 export function parseHash(hash: string): Route {
+  if (hash === '#tracker') return 'tracker'
   if (hash === '#statistik') return 'statistik'
   if (hash === '#organisation' || hash === '#klausuren') return 'organisation'
-  return 'tracker'
+  return 'plan'
 }
 
-export const hrefOf = (r: Route): string => (r === 'tracker' ? '#' : `#${r}`)
+export const hrefOf = (r: Route): string => (r === 'plan' ? '#' : `#${r}`)
 
 export function navigate(r: Route): void {
-  if (r === 'tracker') {
+  if (r === 'plan') {
     // Kein leeres '#' in der Adresszeile stehen lassen
     history.pushState(null, '', location.pathname + location.search)
     dispatchEvent(new HashChangeEvent('hashchange'))

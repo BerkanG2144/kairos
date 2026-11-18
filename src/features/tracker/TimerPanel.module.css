@@ -5,6 +5,21 @@
   height: 16px;
 }
 
+.task {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.task::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--dim);
+}
+
 .clock {
   margin: 16px 0 40px;
   font-family: var(--font-mono);

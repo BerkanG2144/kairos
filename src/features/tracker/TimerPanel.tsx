@@ -20,6 +20,7 @@ export function TimerPanel({ className }: { className?: string }) {
       <div className={styles.now}>
         {info && <span className={ui.dot} style={{ background: info.color }} />}
         <span className={ui.label}>{info?.name}</span>
+        {info?.task && <span className={styles.task}>{info.task}</span>}
       </div>
       <div className={cx(styles.clock, !run && styles.idle, info?.isPause && styles.paused)} role="timer" aria-live="off">
         {clockStr(elapsed)}

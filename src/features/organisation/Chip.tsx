@@ -1,7 +1,7 @@
 import { cx, vars } from '../../components/cx.ts'
 import { itemColor } from '../../domain/plan.ts'
 import type { Act, PlanItem } from '../../domain/types.ts'
-import { Check } from './Check.tsx'
+import { Check } from '../../components/Check.tsx'
 import styles from './Chip.module.css'
 import type { OrgActions } from './types.ts'
 
