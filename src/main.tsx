@@ -10,8 +10,12 @@ import './styles/tokens.css'
 import './styles/base.css'
 
 import { App } from './App.tsx'
+import { FolderBackup } from './state/folderBackup.ts'
+import { FolderBackupProvider } from './state/FolderBackupContext.tsx'
 import { StoreProvider } from './state/StoreProvider.tsx'
 import { Store } from './state/store.ts'
+import { IdbDeviceSettings, MemoryDeviceSettings, type DeviceSettings } from './storage/device.ts'
+import { folderSupported, pickFolder, writeFolderBackup } from './storage/folder.ts'
 import { IdbStorage } from './storage/idb.ts'
 import { MemoryStorage } from './storage/memory.ts'
 
@@ -28,13 +32,31 @@ async function boot() {
     store = await Store.open(new MemoryStorage())
     volatile = true
   }
+  // Zusätzliche Kopie in einem Ordner auf dem Rechner (Chrome/Edge am Desktop).
+  let settings: DeviceSettings
+  try {
+    settings = new IdbDeviceSettings()
+  } catch {
+    settings = new MemoryDeviceSettings()
+  }
+  const folder = new FolderBackup(store, { settings, supported: folderSupported(), pick: pickFolder, write: writeFolderBackup })
+  void folder.init()
+  // Beim Verlassen/Verstecken ausstehende Sicherung sofort schreiben.
+  const flushFolder = () => void folder.flush()
+  window.addEventListener('pagehide', flushFolder)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushFolder()
+  })
+
   // Browser bitten, die Daten nicht automatisch zu löschen (wichtig v. a. auf iOS).
   void navigator.storage?.persist?.().catch(() => {})
 
   createRoot(root).render(
     <StrictMode>
       <StoreProvider store={store}>
-        <App volatile={volatile} />
+        <FolderBackupProvider backup={folder}>
+          <App volatile={volatile} />
+        </FolderBackupProvider>
       </StoreProvider>
     </StrictMode>,
   )

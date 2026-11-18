@@ -81,4 +81,13 @@ exakt denselben Stand. Erst dann wird die alte Datei abgelöst.
 
 ## Phase 3 – Später
 - Sync zwischen Geräten (Supabase o. ä., mit Login), Konfliktstrategie pro Monat/Item.
+  - Ansatz: neue `Storage`-Implementierung (Dokumente `meta` + `m-YYYY-MM` mit `u` passen 1:1 auf
+    Tabellenzeilen); IndexedDB bleibt lokaler Cache für offline.
+  - Umzug: vorhandene Daten (IndexedDB oder `kairos-aktuell.json` aus der Ordner-Sicherung) beim
+    ersten Login hochladen.
+  - Die Ordner-Sicherung (`src/state/folderBackup.ts`) bleibt unabhängig davon als lokale Kopie.
+
+## Erledigt nach Phase 2
+- Ordner-Sicherung (Chrome/Edge Desktop): nach jeder Änderung `kairos-aktuell.json` + Tageskopie
+  (30 Tage) in einen gewählten Ordner; Ordner-Handle in eigener Geräte-DB `kairos-device`.
 - Ideen, die Berkan noch einbringen will.

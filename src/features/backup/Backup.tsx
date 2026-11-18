@@ -3,6 +3,7 @@ import { Toast } from '../../components/Toast.tsx'
 import { importSummary, makeBackup, parseBackup, type ParsedBackup } from '../../domain/backup.ts'
 import { useStore } from '../../state/StoreProvider.tsx'
 import styles from './Backup.module.css'
+import { FolderBackupButton } from './FolderBackupButton.tsx'
 
 /** Kurzes Feedback im Button-Text (wie Legacy „flash“). */
 function useFlash(): [string | null, (t: string) => void] {
@@ -76,6 +77,7 @@ export function Backup() {
         >
           {impFlash ?? 'Import'}
         </button>
+        <FolderBackupButton />
         <input ref={file} type="file" accept=".json,application/json" hidden onChange={onFile} data-testid="import-file" />
       </span>
       {pending && (
