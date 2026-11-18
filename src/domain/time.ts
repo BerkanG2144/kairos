@@ -62,3 +62,22 @@ export const hhmm = (sec: number): string => {
   const d = new Date(sec * 1000)
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
+
+/** 'HH:MM' → Minuten seit Mitternacht (null bei leer). */
+export function toMin(s: string | undefined): number | null {
+  if (!s) return null
+  const [h, m] = s.split(':').map(Number)
+  return (h ?? 0) * 60 + (m ?? 0)
+}
+
+/** Minuten → 'HH:MM', begrenzt auf 00:00–23:59. */
+export function fromMin(m: number): string {
+  const x = Math.max(0, Math.min(1439, Math.round(m)))
+  return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`
+}
+
+/** Kalendertage von heute bis `day` ('YYYY-MM-DD'); negativ = Vergangenheit. DST-sicher. */
+export function dayDiff(day: string, today: Date): number {
+  const [y, m, d] = day.split('-').map(Number)
+  return Math.round((Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 864e5)
+}

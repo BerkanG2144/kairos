@@ -1,0 +1,100 @@
+.head {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.dh {
+  padding: 0 0 10px 6px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.mc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  min-height: 128px;
+  padding: 6px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.mc:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.num {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--mute);
+}
+
+.num b {
+  font-weight: 400;
+}
+
+.num button {
+  padding: 0 2px;
+  font-size: 16px;
+  line-height: 12px;
+  color: var(--dim);
+  opacity: 0;
+}
+
+.mc:hover .num button,
+.num button:focus-visible {
+  opacity: 1;
+}
+
+.num button:hover {
+  color: var(--text);
+}
+
+.out .num {
+  color: var(--dim);
+}
+
+.out > div[role='button'] {
+  opacity: 0.5;
+}
+
+.today .num b {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--signal);
+  color: #111216;
+}
+
+.more {
+  padding-left: 6px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+@media (max-width: 880px) {
+  .mc {
+    min-height: 76px;
+    padding: 4px;
+  }
+}
+
+@media (hover: none) {
+  .num button {
+    opacity: 1;
+  }
+}

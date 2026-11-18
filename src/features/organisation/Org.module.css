@@ -1,0 +1,58 @@
+/* Organisation: breiter, Schrift ~2 px größer als Tracker/Statistik */
+.org {
+  max-width: var(--w-wide);
+  margin: 0 auto;
+  padding: 36px 48px 80px;
+}
+
+.orghead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.seg button {
+  padding: 7px 14px;
+  font-size: 13.5px;
+}
+
+.navLabel {
+  min-width: 170px !important;
+  font-size: 15px !important;
+}
+
+.navLabel small {
+  font-size: 13px;
+}
+
+.addp {
+  margin-left: auto;
+  height: 36px;
+  font-size: 15px;
+}
+
+.orggrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sidebar);
+  gap: 72px;
+  margin-top: 30px;
+  align-items: start;
+}
+
+.orggrid > * {
+  min-width: 0;
+}
+
+@media (max-width: 880px) {
+  .org {
+    padding: 28px 14px 72px;
+  }
+  .orggrid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .navLabel {
+    min-width: 120px !important;
+  }
+}

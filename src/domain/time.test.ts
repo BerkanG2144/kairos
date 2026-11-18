@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, clockStr, dayKey, fmt, isoWeek, mondayOf, monthKeyOfSec, parseDayKey } from './time.ts'
+import { addDays, clockStr, dayDiff, dayKey, fmt, fromMin, isoWeek, mondayOf, monthKeyOfSec, parseDayKey, toMin } from './time.ts'
 
 const at = (s: string) => Math.floor(new Date(s).getTime() / 1000)
 
@@ -48,5 +48,25 @@ describe('Formatierung', () => {
   it('monthKeyOfSec nutzt lokale Zeit', () => {
     expect(monthKeyOfSec(at('2026-11-30T23:30:00+01:00'))).toBe('2026-11')
     expect(monthKeyOfSec(at('2026-11-30T23:30:00Z'))).toBe('2026-12') // = 00:30 in Berlin
+  })
+})
+
+describe('toMin / fromMin / dayDiff', () => {
+  it('toMin', () => {
+    expect(toMin('00:00')).toBe(0)
+    expect(toMin('23:59')).toBe(1439)
+    expect(toMin(undefined)).toBeNull()
+  })
+  it('fromMin begrenzt auf den Tag', () => {
+    expect(fromMin(615)).toBe('10:15')
+    expect(fromMin(1440)).toBe('23:59')
+    expect(fromMin(-5)).toBe('00:00')
+  })
+  it('dayDiff', () => {
+    const t = new Date(2026, 10, 18, 23, 59)
+    expect(dayDiff('2026-11-18', t)).toBe(0)
+    expect(dayDiff('2026-11-19', t)).toBe(1)
+    expect(dayDiff('2026-11-01', t)).toBe(-17)
+    expect(dayDiff('2027-03-29', new Date(2027, 2, 27, 1))).toBe(2) // über Zeitumstellung
   })
 })

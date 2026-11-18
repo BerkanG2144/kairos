@@ -1,0 +1,48 @@
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border-left: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.x {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ti {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.kl {
+  background: color-mix(in srgb, var(--c) 32%, transparent);
+  font-weight: 500;
+}
+
+.done .x {
+  text-decoration: line-through;
+  color: var(--dim);
+}
+
+@media (max-width: 880px) {
+  .compact {
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+  .compact .ti {
+    display: none;
+  }
+}
