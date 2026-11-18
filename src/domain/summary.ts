@@ -1,11 +1,15 @@
 /** Zusammenfassungen und Beschriftungen für Tagesbilanz, Woche und Monatskalender. */
-import { LEARN_DAY_MIN_SEC, MONTHS_SHORT, PAUSE } from './constants.ts'
+import { LEARN_DAY_MIN_SEC, MONTHS, MONTHS_SHORT, PAUSE } from './constants.ts'
 import { learned } from './sessions.ts'
-import { addDays, dayKey, isoWeek } from './time.ts'
+import { addDays, dayKey, isoWeek, mondayOf } from './time.ts'
 import type { Act, ByDay, DayTotals } from './types.ts'
 
 export const WEEKDAYS_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] as const
 export const WEEKDAYS_MON_FIRST = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as const
+export const WEEKDAYS_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'] as const
+
+/** „Mittwoch, 18. November“ */
+export const longDayLabel = (d: Date): string => `${WEEKDAYS_LONG[d.getDay()]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}`
 
 /** Farbe für Sessions eines unbekannten (z. B. hart gelöschten) Fachs. */
 export const UNKNOWN_COLOR = '#55596a'
@@ -69,6 +73,12 @@ export function heatAlpha(sec: number): number | null {
 
 /** Lernzeit eines Tages aus byDay. */
 export const learnedOn = (byDay: ByDay, d: Date): number => learned(byDay[dayKey(d)])
+
+/** Gelernte Sekunden heute und in der laufenden Woche (Mo–So, inkl. heute). */
+export function todayAndWeek(byDay: ByDay, today: Date): { today: number; week: number } {
+  const week = weekDays(mondayOf(today)).reduce((sum, d) => sum + learnedOn(byDay, d), 0)
+  return { today: learnedOn(byDay, today), week }
+}
 
 /** Monatsraster: leere Zellen vor dem 1. (Mo-basiert) und Anzahl Tage. */
 export function monthGrid(y: number, m: number): { offset: number; days: number } {

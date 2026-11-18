@@ -4,6 +4,7 @@ import { SaveError } from './app/SaveError.tsx'
 import { TimerTitle } from './app/TimerTitle.tsx'
 import { UpdateToast } from './app/UpdateToast.tsx'
 import { useRollover } from './state/useRollover.ts'
+import { HomePage } from './features/home/HomePage.tsx'
 import { OrgPage } from './features/organisation/OrgPage.tsx'
 import { PlanPage } from './features/plan/PlanPage.tsx'
 import { StatsPage } from './features/stats/StatsPage.tsx'
@@ -16,6 +17,7 @@ export function App({ volatile }: { volatile: boolean }) {
   return (
     <>
       <Header route={route} />
+      {route === 'home' && <HomePage />}
       {route === 'plan' && <PlanPage />}
       {route === 'tracker' && <TrackerPage />}
       {route === 'statistik' && <StatsPage />}

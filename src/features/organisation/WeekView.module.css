@@ -147,6 +147,11 @@
   border: 1.5px dashed var(--c);
 }
 
+/* Nur Anzeige (Home) */
+.ro {
+  cursor: default;
+}
+
 /* Getrackte Zeit (aus dem Tracker): schraffiert, in Fachfarbe */
 .trk {
   position: absolute;

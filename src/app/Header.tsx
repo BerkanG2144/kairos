@@ -7,6 +7,7 @@ import styles from './Header.module.css'
 import { hrefOf, navigate, type Route } from './route.ts'
 
 const TABS: { r: Route; label: string }[] = [
+  { r: 'home', label: 'Home' },
   { r: 'plan', label: 'Plan' },
   { r: 'tracker', label: 'Tracker' },
   { r: 'statistik', label: 'Statistik' },

@@ -24,10 +24,10 @@ async function dragTo(page: Page, from: Locator, x: number, y: number) {
   await page.mouse.up()
 }
 
-test('Plan ist Startseite: Band mit heute, vergangene Tage ohne Eingabe', async ({ page }) => {
+test('Plan: Band mit heute, vergangene Tage ohne Eingabe', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
-  await expect(page.getByRole('link', { name: 'Plan' })).toHaveAttribute('aria-current', 'page')
+  await page.goto('/#plan')
+  await expect(page.getByRole('link', { name: 'Plan', exact: true })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByTestId('plan-month')).toHaveText('November 2026')
   await expect(col(page, '2026-11-18')).toContainText('Heute')
   await expect(col(page, '2026-11-18').getByRole('textbox')).toBeVisible()
@@ -38,7 +38,7 @@ test('Plan ist Startseite: Band mit heute, vergangene Tage ohne Eingabe', async 
 
 test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#plan')
   await importBackup(page)
   const today = col(page, '2026-11-18')
   const tomorrow = col(page, '2026-11-19')
@@ -60,7 +60,7 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
   await page.getByRole('link', { name: 'Tracker' }).click()
   await expect(page.getByRole('timer')).toHaveText('00:01:05')
   await expect(page.getByRole('button', { name: 'Mathe', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('link', { name: 'Plan' }).click()
+  await page.getByRole('link', { name: 'Plan', exact: true }).click()
 
   // umsortieren: Altklausur nach ganz oben
   const alt = today.locator('[data-task]', { hasText: 'Altklausur' })
@@ -92,7 +92,7 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
 
 test('Bearbeiten: umbenennen, Fach, anderer Tag, löschen', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#plan')
   await importBackup(page)
   await add(page, '2026-11-18', '18.11.', 'Zusammenfassung')
   await col(page, '2026-11-18').getByRole('button', { name: 'Zusammenfassung', exact: true }).click()
@@ -113,7 +113,7 @@ test('Bearbeiten: umbenennen, Fach, anderer Tag, löschen', async ({ page }) => 
 
 test('Offene Tasks von gestern stehen am nächsten Tag oben', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#plan')
   await add(page, '2026-11-18', '18.11.', 'Offen', 'Erledigt')
   await add(page, '2026-11-19', '19.11.', 'Morgen geplant')
   await col(page, '2026-11-18').getByRole('checkbox', { name: 'Erledigt erledigt' }).click()
@@ -127,12 +127,12 @@ test('Offene Tasks von gestern stehen am nächsten Tag oben', async ({ page }) =
 
 test('Navigationsleiste steht auf allen Seiten an derselben Stelle', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/')
+  await page.goto('/#plan')
   const pos: number[] = []
-  for (const name of ['Plan', 'Tracker', 'Statistik', 'Organisation']) {
-    await page.getByRole('link', { name }).click()
-    await expect(page.getByRole('link', { name })).toHaveAttribute('aria-current', 'page')
-    pos.push((await page.getByRole('link', { name: 'Plan' }).boundingBox())!.x)
+  for (const name of ['Home', 'Plan', 'Tracker', 'Statistik', 'Organisation']) {
+    await page.getByRole('link', { name, exact: true }).click()
+    await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('aria-current', 'page')
+    pos.push((await page.getByRole('link', { name: 'Home' }).boundingBox())!.x)
   }
   expect(new Set(pos).size).toBe(1)
 })

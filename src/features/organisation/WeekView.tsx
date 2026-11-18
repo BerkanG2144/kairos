@@ -31,7 +31,7 @@ type Entry = { kind: 'plan'; it: PlanItem } | { kind: 'track'; t: Tracked }
 const clock = (m: number) => (m >= 1440 ? '24:00' : fromMin(Math.floor(m)))
 
 /** Getrackte Zeit: schraffiert in der Fachfarbe, wächst live mit, solange der Timer läuft. */
-function TrackedBlock({ t, lane, n, name, color }: { t: Tracked; lane: number; n: number; name: string; color: string }) {
+export function TrackedBlock({ t, lane, n, name, color }: { t: Tracked; lane: number; n: number; name: string; color: string }) {
   const top = Math.max(0, minToPx(t.s))
   const h = Math.max(14, ((t.e - Math.max(t.s, H0 * 60)) / 60) * PX - 2)
   const w = 100 / n
@@ -50,13 +50,19 @@ function TrackedBlock({ t, lane, n, name, color }: { t: Tracked; lane: number; n
   )
 }
 
-export function Block({ x, color, dragging, ...rest }: { x: Placed; color: string; dragging?: boolean } & HTMLAttributes<HTMLDivElement>) {
+export function Block({
+  x,
+  color,
+  dragging,
+  readOnly,
+  ...rest
+}: { x: Placed; color: string; dragging?: boolean; readOnly?: boolean } & HTMLAttributes<HTMLDivElement>) {
   const top = Math.max(0, minToPx(x.s))
   const h = Math.max(18, ((x.e - Math.max(x.s, H0 * 60)) / 60) * PX - 2)
   const w = 100 / x.n
   return (
     <div
-      className={cx(styles.blk, x.it.type === 'termin' && styles.ter, dragging && styles.drag)}
+      className={cx(styles.blk, x.it.type === 'termin' && styles.ter, dragging && styles.drag, readOnly && styles.ro)}
       data-item={x.it.id}
       style={{ ...vars({ '--c': color }), top, height: h, left: `calc(${w * x.lane}% + 2px)`, width: `calc(${w}% - 4px)` }}
       {...rest}
@@ -65,7 +71,7 @@ export function Block({ x, color, dragging, ...rest }: { x: Placed; color: strin
       <span>
         {x.it.t}–{x.it.e}
       </span>
-      <i className={styles.rs} data-resize aria-hidden="true" />
+      {!readOnly && <i className={styles.rs} data-resize aria-hidden="true" />}
     </div>
   )
 }

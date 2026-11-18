@@ -7,6 +7,7 @@ import {
   canStart,
   deleteTask,
   findTask,
+  moveOpenTask,
   moveTask,
   rollover,
   runningTask,
@@ -46,6 +47,33 @@ describe('Tasks anlegen', () => {
     const s = addTask(s0, '  Blatt 3 ', '2026-12-01', T0, { act: act(s0, 'Mathe'), id: 'x' })
     expect(findTask(s, 'x')).toMatchObject({ title: 'Blatt 3', d: '2026-12-01', act: act(s0, 'Mathe'), o: 0 })
     expect(s.months['2026-12']!.k).toHaveLength(1)
+  })
+})
+
+describe('Oben einfügen und Reihenfolge nur unter offenen (Home)', () => {
+  it('top: neuer Task steht ganz oben', () => {
+    let s = base('A', 'B')
+    s = addTask(s, 'Neu', '2026-11-18', T0, { top: true })
+    expect(titles(s, '2026-11-18')).toEqual(['Neu', 'A', 'B'])
+    s = addTask(emptyState(), 'X', '2026-11-18', T0, { top: true })
+    expect(titles(s, '2026-11-18')).toEqual(['X'])
+  })
+
+  it('moveOpenTask zählt erledigte nicht mit', () => {
+    // Reihenfolge: A(erledigt) B C(erledigt) D
+    let s = base('A', 'B', 'C', 'D')
+    s = toggleTaskDone(toggleTaskDone(s, 't1', T0), 't3', T0)
+    const open = (st: State) => tasksOn(st, '2026-11-18').filter((t) => !t.done).map((t) => t.title)
+    expect(open(moveOpenTask(s, 't4', '2026-11-18', 0, T0))).toEqual(['D', 'B'])
+    expect(open(moveOpenTask(s, 't2', '2026-11-18', 1, T0))).toEqual(['D', 'B'])
+    expect(open(moveOpenTask(s, 't2', '2026-11-18', 9, T0))).toEqual(['D', 'B'])
+    expect(open(moveOpenTask(s, 't2', '2026-11-18', 0, T0))).toEqual(['B', 'D'])
+    // nur erledigte vorhanden → an den Anfang
+    let e = base('A')
+    e = toggleTaskDone(e, 't1', T0)
+    e = addTask(e, 'X', '2026-11-19', T0, { id: 'x' })
+    e = moveOpenTask(e, 'x', '2026-11-18', 0, T0)
+    expect(titles(e, '2026-11-18')).toEqual(['X', 'A'])
   })
 })
 

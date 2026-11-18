@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { dayLabel, heatAlpha, monthGrid, pct, piePath, summarize, toItems, UNKNOWN_COLOR, weekDays, weekLabel } from './summary.ts'
+import { dayLabel, heatAlpha, longDayLabel, monthGrid, pct, piePath, summarize, todayAndWeek, toItems, UNKNOWN_COLOR, weekDays, weekLabel } from './summary.ts'
 import { dayKey } from './time.ts'
 import type { Act } from './types.ts'
 
@@ -88,5 +88,22 @@ describe('piePath', () => {
   it('Viertel und großer Bogen', () => {
     expect(piePath(84, 84, 82, -Math.PI / 2, 0)).toBe('M84 84L84.00 2.00A82 82 0 0 1 166.00 84.00Z')
     expect(piePath(84, 84, 82, 0, Math.PI * 1.5)).toContain(' 0 1 1 ')
+  })
+})
+
+describe('Home: Datum und Summen', () => {
+  it('longDayLabel', () => {
+    expect(longDayLabel(new Date(2026, 10, 18))).toBe('Mittwoch, 18. November')
+    expect(longDayLabel(new Date(2026, 10, 22))).toBe('Sonntag, 22. November')
+  })
+
+  it('todayAndWeek zählt heute und Mo–So der laufenden Woche (ohne Pause, ohne Vorwoche)', () => {
+    const bd = {
+      '2026-11-15': { a: 9999 }, // Sonntag der Vorwoche
+      '2026-11-16': { a: 3600, _p: 600 },
+      '2026-11-18': { a: 1800, b: 600 },
+      '2026-11-20': { a: 100 }, // Zukunft in derselben Woche (z. B. Uhr verstellt) zählt mit
+    }
+    expect(todayAndWeek(bd, new Date(2026, 10, 18, 15))).toEqual({ today: 2400, week: 6100 })
   })
 })

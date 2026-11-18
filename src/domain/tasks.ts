@@ -59,12 +59,13 @@ function putTasks(s: State, list: Task[], nowMs: number): State {
   return { ...s, months }
 }
 
-/** Neuer Task am Ende des Tages. Leerer Titel → unverändert. */
-export function addTask(s: State, title: string, day: string, nowMs: number, opts: { act?: ActId; id?: string } = {}): State {
+/** Neuer Task am Ende des Tages (mit `top` ganz oben). Leerer Titel → unverändert. */
+export function addTask(s: State, title: string, day: string, nowMs: number, opts: { act?: ActId; id?: string; top?: boolean } = {}): State {
   const t = title.trim().slice(0, TASK_TITLE_MAX)
   if (!t) return s
-  const last = tasksOn(s, day).at(-1)
-  const task: Task = { id: opts.id ?? newTaskId(nowMs), title: t, d: day, o: last ? last.o + 1 : 0 }
+  const list = tasksOn(s, day)
+  const o = opts.top ? (list[0]?.o ?? 1) - 1 : (list.at(-1)?.o ?? -1) + 1
+  const task: Task = { id: opts.id ?? newTaskId(nowMs), title: t, d: day, o }
   if (opts.act) task.act = opts.act
   return putTasks(s, [task], nowMs)
 }
@@ -82,6 +83,19 @@ export function moveTask(s: State, id: string, day: string, index: number, nowMs
   if (task.d === day && list.every((t, i) => t === before[i])) return s
   const changed = list.flatMap((t, o) => (t.o === o && t.d === day ? [] : [{ ...t, o, d: day }]))
   return putTasks(s, changed, nowMs)
+}
+
+/**
+ * Wie moveTask, aber `openIndex` zählt nur die offenen Tasks des Tages (Home zeigt
+ * erledigte getrennt). Hinter den letzten offenen = openIndex ≥ Anzahl offener.
+ */
+export function moveOpenTask(s: State, id: string, day: string, openIndex: number, nowMs: number): State {
+  const list = tasksOn(s, day).filter((t) => t.id !== id)
+  const open = list.filter((t) => !t.done)
+  const ref = open[openIndex]
+  const lastOpen = open.at(-1)
+  const index = ref ? list.indexOf(ref) : lastOpen ? list.indexOf(lastOpen) + 1 : 0
+  return moveTask(s, id, day, index, nowMs)
 }
 
 export type TaskPatch = { title?: string; act?: ActId | null; d?: string }
