@@ -1,0 +1,116 @@
+/* Wiederverwendbare UI-Bausteine. Nur über CSS Modules importieren. */
+
+.label {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-spacing);
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-size: 14px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pill:hover {
+  border-color: var(--line2);
+}
+
+/* Navigation ‹ Label › */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.nav button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--mute);
+  font-size: 16px;
+}
+
+.nav button:hover {
+  color: var(--text);
+  background: var(--panel);
+}
+
+.nav .navLabel {
+  width: auto;
+  height: auto;
+  min-width: 132px;
+  border-radius: 0;
+  font-size: inherit;
+  text-align: center;
+}
+
+.nav .navLabel:hover {
+  background: none;
+}
+
+.navLabel small {
+  color: var(--dim);
+  margin-left: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* Segment-Schalter */
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.seg button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.seg button:hover {
+  color: var(--text);
+}
+
+.seg button.segOn {
+  background: var(--panel2);
+  color: var(--text);
+}
+
+.empty {
+  color: var(--dim);
+  font-size: 14px;
+}

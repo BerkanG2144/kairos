@@ -1,0 +1,164 @@
+.now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 16px;
+}
+
+.clock {
+  margin: 16px 0 40px;
+  font-family: var(--font-mono);
+  font-weight: 200;
+  font-size: clamp(58px, 9vw, 100px);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+.idle {
+  color: var(--dim);
+}
+
+.paused {
+  color: var(--pause);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Fach-Pill: Hauptbutton füllt die Pill, × sitzt oben rechts */
+.act {
+  padding: 0;
+}
+
+.actMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 100%;
+  padding: 0 18px;
+  border-radius: 999px;
+}
+
+.on {
+  color: #111216;
+  border-color: transparent;
+}
+
+.on .actMain > span:first-child {
+  background: #111216 !important;
+  opacity: 0.35;
+}
+
+.x {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--panel2);
+  border: 1px solid var(--line2) !important;
+  color: var(--mute);
+  font-size: 12px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.act:hover .x,
+.showX .x {
+  display: block;
+}
+
+.x:hover {
+  color: var(--text);
+}
+
+.confirm {
+  gap: 14px;
+  color: var(--mute);
+}
+
+.yes {
+  color: var(--urgent);
+}
+
+.no {
+  color: var(--text);
+}
+
+.ghost {
+  padding: 0 16px;
+  color: var(--mute);
+}
+
+.ghost:hover {
+  color: var(--text);
+}
+
+.addForm {
+  display: inline-flex;
+}
+
+.addForm input {
+  width: 170px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px dashed var(--line2);
+  font-size: 14px;
+  outline: none;
+}
+
+.addForm input::placeholder {
+  color: var(--dim);
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.pause {
+  border-style: dashed;
+  color: var(--mute);
+}
+
+.pauseOn {
+  background: var(--pause);
+  color: #111216;
+  border-style: solid;
+}
+
+.stop {
+  padding: 0 16px;
+  color: var(--mute);
+}
+
+.stop:hover {
+  color: var(--text);
+}
+
+.sq {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+@media (hover: none) {
+  /* Touch: × nur nach langem Drücken */
+  .act:hover .x {
+    display: none;
+  }
+  .showX .x {
+    display: block;
+  }
+}
