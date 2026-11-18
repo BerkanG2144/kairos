@@ -31,7 +31,7 @@ function MiniTimer() {
 
 export function Header({ route }: { route: Route }) {
   return (
-    <header className={`${styles.top} ${route === 'organisation' ? styles.wide : ''}`}>
+    <header className={styles.top}>
       <nav className={styles.tabs}>
         {TABS.map(({ r, label }) => (
           <a

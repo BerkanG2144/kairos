@@ -12,6 +12,12 @@ body {
   min-height: 100%;
 }
 
+html {
+  /* Platz für die Scrollleiste immer reservieren – sonst verrutscht alles um ihre Breite,
+     je nachdem ob eine Seite scrollt oder nicht. */
+  scrollbar-gutter: stable;
+}
+
 body {
   min-height: 100vh;
   background: var(--bg);

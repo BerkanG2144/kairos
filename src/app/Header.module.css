@@ -1,17 +1,12 @@
 .top {
-  max-width: var(--w-narrow);
+  /* Immer gleich breit – die Leiste springt beim Seitenwechsel nicht. */
+  max-width: var(--w-wide);
   margin: 0 auto;
-  padding: 28px 32px 0;
+  padding: 28px 48px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-}
-
-.top.wide {
-  max-width: var(--w-wide);
-  padding-left: 48px;
-  padding-right: 48px;
 }
 
 .tabs {
@@ -66,10 +61,6 @@
     padding: 20px 20px 0;
     flex-wrap: wrap;
     row-gap: 10px;
-  }
-  .top.wide {
-    padding-left: 14px;
-    padding-right: 14px;
   }
   .tabs {
     gap: 16px;
