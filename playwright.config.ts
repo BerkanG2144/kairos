@@ -13,6 +13,8 @@ export default defineConfig({
     locale: 'de-DE',
     timezoneId: 'Europe/Berlin',
     trace: 'on-first-retry',
+    // Service Worker nur in pwa.spec.ts – sonst würde der Cache Tests gegenseitig beeinflussen.
+    serviceWorkers: 'block',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

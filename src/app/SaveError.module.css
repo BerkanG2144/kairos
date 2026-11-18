@@ -1,7 +1,7 @@
 .dot {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   width: 8px;
   height: 8px;
   border-radius: 50%;

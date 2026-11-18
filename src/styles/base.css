@@ -22,6 +22,8 @@ body {
     radial-gradient(900px 620px at 88% -12%, rgba(241, 226, 162, 0.075), transparent 62%),
     radial-gradient(700px 520px at -5% 112%, rgba(199, 184, 242, 0.05), transparent 60%);
   background-attachment: fixed;
+  /* Installiert auf dem iPhone liegt die Statusleiste über der Seite. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 
 button,
