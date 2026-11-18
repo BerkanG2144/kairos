@@ -13,6 +13,7 @@ import type { PlanItem } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
 import { useNow } from '../../state/useNow.ts'
 import { usePref } from '../../state/usePref.ts'
+import { ItemEditor } from './ItemEditor.tsx'
 import { MonthView } from './MonthView.tsx'
 import styles from './Org.module.css'
 import { Sidebar } from './Sidebar.tsx'
@@ -32,7 +33,7 @@ export function OrgPage() {
   const today = new Date(now * 1000)
   const [view, setView] = usePref<View>('lernzeit.oview', 'week', isView)
   const [date, setDate] = useState(() => startOfDay(new Date()))
-  const [, setEditing] = useState<Editing | null>(null)
+  const [editing, setEditing] = useState<Editing | null>(null)
 
   const plan = useMemo(() => planByDay(state), [state])
   const acts = state.meta.acts
@@ -115,6 +116,7 @@ export function OrgPage() {
         </section>
         <Sidebar state={state} today={today} actions={actions} onGo={go} />
       </div>
+      {editing && <ItemEditor key={editing.it.id} it={editing.it} isNew={editing.isNew} onClose={() => setEditing(null)} />}
     </main>
   )
 }

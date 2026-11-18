@@ -1,13 +1,14 @@
-import { useLayoutEffect, useRef, type HTMLAttributes, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, type HTMLAttributes } from 'react'
 import { cx, vars } from '../../components/cx.ts'
 import { layoutDay, type Placed } from '../../domain/lanes.ts'
 import { isTimed, itemColor, sortItems } from '../../domain/plan.ts'
 import { WEEKDAYS_SHORT } from '../../domain/summary.ts'
-import { addDays, dayKey, pad } from '../../domain/time.ts'
+import { addDays, dayKey, fromMin, pad } from '../../domain/time.ts'
 import type { Act, PlanItem } from '../../domain/types.ts'
 import { Chip } from './Chip.tsx'
 import { H0, H1, minToPx, PX } from './grid.ts'
 import type { OrgActions } from './types.ts'
+import { useBlockDrag } from './useBlockDrag.tsx'
 import styles from './WeekView.module.css'
 
 type Props = {
@@ -17,19 +18,15 @@ type Props = {
   actions: OrgActions
   /** aktuelle Zeit (s) – für Jetzt-Linie und „heute“ */
   now: number
-  /** optionale Interaktion auf dem Raster (Drag & Drop), siehe useBlockDrag */
-  colProps?: (day: string) => HTMLAttributes<HTMLDivElement>
-  blockProps?: (x: Placed) => HTMLAttributes<HTMLDivElement>
-  overlay?: (day: string) => ReactNode
 }
 
-export function Block({ x, color, children, ...rest }: { x: Placed; color: string; children?: ReactNode } & HTMLAttributes<HTMLDivElement>) {
+export function Block({ x, color, dragging, ...rest }: { x: Placed; color: string; dragging?: boolean } & HTMLAttributes<HTMLDivElement>) {
   const top = Math.max(0, minToPx(x.s))
   const h = Math.max(18, ((x.e - Math.max(x.s, H0 * 60)) / 60) * PX - 2)
   const w = 100 / x.n
   return (
     <div
-      className={cx(styles.blk, x.it.type === 'termin' && styles.ter)}
+      className={cx(styles.blk, x.it.type === 'termin' && styles.ter, dragging && styles.drag)}
       data-item={x.it.id}
       style={{ ...vars({ '--c': color }), top, height: h, left: `calc(${w * x.lane}% + 2px)`, width: `calc(${w}% - 4px)` }}
       {...rest}
@@ -38,12 +35,22 @@ export function Block({ x, color, children, ...rest }: { x: Placed; color: strin
       <span>
         {x.it.t}–{x.it.e}
       </span>
-      {children}
+      <i className={styles.rs} data-resize aria-hidden="true" />
     </div>
   )
 }
 
-export function WeekView({ monday, plan, acts, actions, now, colProps, blockProps, overlay }: Props) {
+function Preview({ p, acts }: { p: ReturnType<ReturnType<typeof useBlockDrag>['preview']>; acts: Act[] }) {
+  if (!p) return null
+  if (p.kind === 'block') return <Block x={p.x} color={itemColor(p.x.it, acts)} dragging />
+  return (
+    <div className={styles.ghost} style={{ top: minToPx(p.s), height: Math.max(18, ((p.e - p.s) / 60) * PX - 2) }} data-testid="drag-ghost">
+      {fromMin(p.s)}–{fromMin(p.e)}
+    </div>
+  )
+}
+
+export function WeekView({ monday, plan, acts, actions, now }: Props) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
   const nowD = new Date(now * 1000)
   const tk = dayKey(nowD)
@@ -51,6 +58,7 @@ export function WeekView({ monday, plan, acts, actions, now, colProps, blockProp
   const scroll = useRef<HTMLDivElement>(null)
   const weekKey = dayKey(monday)
   const inWeek = days.some((d) => dayKey(d) === tk)
+  const drag = useBlockDrag(owk, actions)
 
   // Spalten von Kopf und Fällig-Zeile an die Scrollbar des Rasters angleichen.
   useLayoutEffect(() => {
@@ -125,19 +133,23 @@ export function WeekView({ monday, plan, acts, actions, now, colProps, blockProp
                   className={cx(styles.col, k === tk && styles.colToday, we && styles.colWe)}
                   style={{ ...vars({ '--ph': `${PX}px` }), height }}
                   data-col={k}
-                  {...colProps?.(k)}
+                  {...drag.colProps(k)}
                 >
-                  {layoutDay((plan[k] ?? []).filter(isTimed)).map((x) => (
+                  {layoutDay((plan[k] ?? []).filter((it) => isTimed(it) && it.id !== drag.hiddenId)).map((x) => (
                     <Block
                       key={x.it.id}
                       x={x}
                       color={itemColor(x.it, acts)}
-                      onClick={blockProps ? undefined : () => actions.open(x.it)}
-                      {...blockProps?.(x)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${x.it.title} ${x.it.t}–${x.it.e}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') actions.open(x.it)
+                      }}
                     />
                   ))}
                   {k === tk && nowMin >= H0 * 60 && <div className={styles.nowline} style={{ top: minToPx(nowMin) }} />}
-                  {overlay?.(k)}
+                  <Preview p={drag.preview(k)} acts={acts} />
                 </div>
               )
             })}

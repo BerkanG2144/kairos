@@ -1,0 +1,137 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.seg {
+  align-self: flex-start;
+}
+
+.seg button {
+  padding: 7px 14px;
+  font-size: 13.5px;
+}
+
+.form input,
+.form select {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 16px; /* ≥ 16 px: kein Auto-Zoom auf iOS */
+  outline: none;
+  color-scheme: dark;
+}
+
+.form input:focus,
+.form select:focus {
+  border-color: var(--line2);
+}
+
+.form input::placeholder {
+  color: var(--dim);
+}
+
+.form .title {
+  height: 46px;
+  font-size: 19px;
+}
+
+.f {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.r3 {
+  display: flex;
+  gap: 10px;
+}
+
+.r3 > label {
+  flex: 1 1 0;
+}
+
+.r3 > label:first-child {
+  flex: 1.35 1 0;
+}
+
+.rep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--mute);
+}
+
+.repCheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.form .rep input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--signal);
+}
+
+.form .rep input[type='date'] {
+  width: auto;
+  flex: 1;
+}
+
+.acts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.sp {
+  flex: 1;
+}
+
+.btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--mute);
+}
+
+.btn:hover {
+  color: var(--text);
+}
+
+.pri {
+  background: var(--signal);
+  color: #111216;
+}
+
+.pri:hover {
+  color: #111216;
+}
+
+.dang {
+  padding: 0 6px;
+  color: var(--urgent);
+}
+
+@media (max-width: 420px) {
+  .r3 {
+    flex-wrap: wrap;
+  }
+  .r3 > label:first-child {
+    flex: 1 1 100%;
+  }
+}
