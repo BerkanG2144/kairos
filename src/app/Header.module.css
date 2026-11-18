@@ -6,11 +6,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  /* Wird das Fenster zu schmal, rutscht der rechte Teil in eine zweite Zeile statt umzubrechen. */
+  flex-wrap: wrap;
+  gap: 10px 16px;
 }
 
 .tabs {
   display: flex;
+  flex: none;
   gap: 22px;
 }
 
@@ -38,15 +41,24 @@
   display: flex;
   align-items: center;
   gap: 22px;
+  min-width: 0;
 }
 
 .mini {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  max-width: 300px;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--mute);
+}
+
+.mini > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dot {

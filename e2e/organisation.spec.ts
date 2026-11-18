@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { freezeAt, importBackup, storedPlan } from './helpers.ts'
 
 const PX = 54
-const H0 = 6
+const H0 = 0
 
 /** y-Koordinate einer Uhrzeit in einer Tagesspalte. */
 async function at(page: Page, day: string, h: number, m = 0) {
@@ -17,7 +17,7 @@ test.describe('Organisation (Maus)', () => {
     await freezeAt(page)
     await page.goto('/#organisation')
     await page.getByRole('button', { name: 'Woche' }).click()
-    await page.getByTestId('week-scroll').evaluate((el) => (el.scrollTop = 0))
+    await page.getByTestId('week-scroll').evaluate((el) => (el.scrollTop = 6 * 54)) // ab 06:00 sichtbar
   })
 
   test('Block per Drag anlegen und verschieben', async ({ page }) => {

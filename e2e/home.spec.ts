@@ -102,3 +102,22 @@ test('Live-Block ist sofort da; vor 5 min beendet verschwindet er, danach bleibt
   await card.getByRole('button', { name: 'Kurz stoppen' }).click()
   await expect(timeline.locator('[data-tracked="done"]')).toHaveAccessibleName('Getrackt: Kurz 15:05–15:11')
 })
+
+test('Nachts getrackte Zeit ist im Tageskalender sichtbar (00:30)', async ({ page }) => {
+  await freezeAt(page, new Date('2026-11-19T00:30:00+01:00'))
+  await page.goto('/#tracker')
+  await page.getByRole('button', { name: 'Fach hinzufügen' }).click()
+  await page.getByLabel('Neues Fach').fill('LA 2')
+  await page.keyboard.press('Enter')
+  await page.getByRole('link', { name: 'Home' }).click()
+  await add(page, 'MINT Blatt')
+  const card = page.getByTestId('home-open').locator('[data-task]', { hasText: 'MINT Blatt' })
+  await card.hover()
+  await card.getByRole('button', { name: 'MINT Blatt starten' }).click()
+  await page.getByRole('menuitemradio', { name: 'LA 2' }).click()
+  await page.clock.runFor(10 * 60_000)
+  await page.reload() // Kalender scrollt beim Öffnen zur aktuellen Uhrzeit
+  const live = page.getByTestId('day-timeline').locator('[data-tracked="live"]')
+  await expect(live).toHaveAccessibleName('Getrackt: MINT Blatt 00:30–jetzt')
+  await expect(live).toBeInViewport()
+})
