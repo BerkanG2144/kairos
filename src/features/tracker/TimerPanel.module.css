@@ -154,11 +154,8 @@
 }
 
 @media (hover: none) {
-  /* Touch: × nur nach langem Drücken */
-  .act:hover .x {
+  /* Touch: × nur nach langem Drücken (iOS hält :hover nach dem Tippen fest) */
+  .act:not(.showX):hover .x {
     display: none;
-  }
-  .showX .x {
-    display: block;
   }
 }

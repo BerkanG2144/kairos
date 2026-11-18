@@ -35,6 +35,9 @@ export function ActPills() {
   }, [])
 
   const onPointerDown = (id: string) => (e: PointerEvent) => {
+    // Nach langem Drücken senden Mobile-Browser oft keinen click – Flag sonst „hängt“
+    // und verschluckt den nächsten Tipp.
+    suppressClick.current = false
     if (e.pointerType !== 'touch') return
     clearTimeout(pressTimer.current)
     pressTimer.current = setTimeout(() => {
