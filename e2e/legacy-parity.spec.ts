@@ -11,8 +11,6 @@ type Snapshot = {
   rows: string[]
   day: string
   dayLegend: string
-  week: string[]
-  weekLegend: string
   side: string[]
 }
 
@@ -27,22 +25,16 @@ async function legacySnapshot(page: Page): Promise<Snapshot> {
   const kpis: Record<string, string[]> = {}
   for (const r of ['7', '30', '365', 'all']) {
     await page.click(`#range button[data-r="${r}"]`)
-    kpis[r] = await page.evaluate(() => ['#sTotal', '#sDays', '#sAvg', '#sStreak', '#sBest'].map((s) => document.querySelector(s)!.textContent!.replace('· Rekord ', '')))
+    kpis[r] = await page.evaluate(() => ['#sTotal', '#sDays', '#sAvg'].map((s) => document.querySelector(s)!.textContent!))
   }
   const rows = (await page.locator('#sRows .srow').allInnerTexts()).map(norm)
   await page.evaluate(() => (location.hash = ''))
   await page.click('#dPrev') // gestern (letzter Tag im Backup)
   const day = (await page.textContent('#dTotal'))!
   const dayLegend = norm(await page.innerText('#dLegend'))
-  const week: string[] = []
-  for (let i = 0; i < 4; i++) {
-    week.push((await page.textContent('#wTotal'))!)
-    await page.click('#wPrev')
-  }
-  const weekLegend = norm(await page.innerText('#legend'))
   await page.evaluate(() => (location.hash = '#organisation'))
   const side = await Promise.all(['#oToday', '#oDue', '#oExams'].map(async (s) => norm(await page.innerText(s))))
-  return { kpis, rows, day, dayLegend, week, weekLegend, side }
+  return { kpis, rows, day, dayLegend, side }
 }
 
 async function appSnapshot(page: Page): Promise<Snapshot> {
@@ -51,22 +43,15 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
   const kpis: Record<string, string[]> = {}
   for (const [r, label] of [['7', '7 Tage'], ['30', '30 Tage'], ['365', 'Jahr'], ['all', 'Gesamt']] as const) {
     await page.getByRole('button', { name: label }).click()
-    const v = await Promise.all(['kpi-total', 'kpi-days', 'kpi-avg', 'kpi-streak'].map((id) => page.getByTestId(id).textContent()))
-    const best = (await page.getByText(/· Rekord/).textContent().catch(() => '')) ?? ''
-    kpis[r] = [...(v as string[]), best.replace('· Rekord ', '')]
+    kpis[r] = (await Promise.all(['kpi-total', 'kpi-days', 'kpi-avg'].map((id) => page.getByTestId(id).textContent()))) as string[]
   }
   const main = page.getByRole('main')
   const rows = (await main.locator('> div:nth-of-type(3) > div').allInnerTexts()).map(norm)
-  await page.getByRole('link', { name: 'Tracker' }).click()
+  // Tagesbilanz steht jetzt in der Statistik („Heute“)
+  await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: 'Heute' }).click()
   await page.getByRole('button', { name: 'Voriger Tag' }).click()
   const day = (await page.getByTestId('day-total').textContent())!
   const dayLegend = norm(await page.getByRole('region', { name: 'Tagesbilanz' }).locator('svg + div').innerText())
-  const week: string[] = []
-  for (let i = 0; i < 4; i++) {
-    week.push((await page.getByTestId('week-total').textContent())!)
-    await page.getByRole('button', { name: 'Vorige Woche' }).click()
-  }
-  const weekLegend = norm(await page.getByTestId('week-total').locator('xpath=following-sibling::div[2]').innerText())
   await page.getByRole('link', { name: 'Organisation' }).click()
   const side = await Promise.all(
     ['Heute', 'Fällig', 'Klausuren'].map(async (name) => {
@@ -75,10 +60,10 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
       return norm((await region.innerText()).replace(label, ''))
     }),
   )
-  return { kpis, rows, day, dayLegend, week, weekLegend, side }
+  return { kpis, rows, day, dayLegend, side }
 }
 
-test('Tracker, Statistik und Organisation zeigen dieselben Zahlen wie die Legacy-Datei', async ({ browser }) => {
+test('Statistik und Organisation zeigen dieselben Zahlen wie die Legacy-Datei', async ({ browser }) => {
   const ctxL = await browser.newContext({ locale: 'de-DE', timezoneId: 'Europe/Berlin', viewport: { width: 1280, height: 900 } })
   const ctxA = await browser.newContext({ locale: 'de-DE', timezoneId: 'Europe/Berlin', viewport: { width: 1280, height: 900 } })
   const pl = await ctxL.newPage()

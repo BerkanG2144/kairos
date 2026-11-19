@@ -6,7 +6,7 @@
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin: 40px 0 56px;
 }
@@ -19,10 +19,6 @@
   letter-spacing: -0.02em;
 }
 
-.best {
-  color: var(--dim);
-  letter-spacing: 0.1em;
-}
 
 .rows {
   display: flex;

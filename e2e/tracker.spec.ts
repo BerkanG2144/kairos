@@ -1,5 +1,14 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { expectNoHorizontalScroll, freezeAt, importBackup, NOW, revealRemove } from './helpers.ts'
+
+/** Gelernte Zeit heute laut Tagesbilanz (Statistik → Heute). */
+async function dayTotal(page: Page): Promise<string | null> {
+  await page.getByRole('link', { name: 'Statistik' }).click()
+  await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: 'Heute' }).click()
+  const t = await page.getByTestId('day-total').textContent()
+  await page.getByRole('link', { name: 'Tracker' }).click()
+  return t
+}
 
 const NOW_PLUS = (min: number) => NOW.getTime() + min * 60_000
 
@@ -38,9 +47,9 @@ test('Fach anlegen → Timer → Pause → Weiter → Neuladen läuft weiter', a
   await page.getByRole('button', { name: 'Stopp' }).click()
   await expect(timer).toHaveText('00:00:00')
   await expect(page.getByRole('button', { name: 'Stopp' })).toHaveCount(0)
-  // 65 s + 12 s Lernzeit, 30 s Pause
-  await expect(page.getByTestId('day-total')).toHaveText('1m')
   await expectNoHorizontalScroll(page)
+  // 65 s + 12 s Lernzeit, 30 s Pause
+  await expect.poll(() => dayTotal(page)).toBe('1m')
 })
 
 test('Fach löschen mit Bestätigung, gleicher Name reaktiviert', async ({ page, isMobile }) => {
@@ -91,28 +100,37 @@ test('Lücken-Erkennung: Seite war zu → rückwirkend stoppen', async ({ page }
   await page.getByRole('button', { name: 'Um 15:10 stoppen' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByRole('timer')).toHaveText('00:00:00')
-  await expect(page.getByTestId('day-total')).toHaveText('10m')
+  await expect.poll(() => dayTotal(page)).toBe('10m')
 })
 
-test('Statistik: „Heute“ zeigt die Tagesbilanz, kein Wochen-Diagramm mehr', async ({ page }) => {
+test('Tracker ohne Tages-/Wochenbilanz; Statistik ohne Serie und Wochen-Diagramm', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/#tracker')
+  await importBackup(page)
+  await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toHaveCount(0)
+  await expect(page.getByTestId('week-total')).toHaveCount(0)
+  await expect(page.getByText('November 2026')).toBeVisible() // Monatskalender bleibt
+  await page.getByRole('link', { name: 'Statistik' }).click()
+  await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: '7 Tage' }).click()
+  await expect(page.getByTestId('kpi-total')).toBeVisible()
+  await expect(page.getByText(/Serie|Rekord/)).toHaveCount(0)
+  await expect(page.getByText('Letzte 12 Wochen')).toHaveCount(0)
+})
+
+test('Statistik: „Heute“ zeigt die Tagesbilanz', async ({ page }) => {
   await freezeAt(page)
   await page.goto('/#statistik')
   await importBackup(page)
-  await expect(page.getByText('Letzte 12 Wochen')).toHaveCount(0)
   const seg = page.getByRole('group', { name: 'Zeitraum' })
   await seg.getByRole('button', { name: 'Heute' }).click()
   const day = page.getByRole('region', { name: 'Tagesbilanz' })
   await expect(day).toBeVisible()
   await expect(page.getByTestId('kpi-total')).toHaveCount(0)
-  // gleiche Zahl wie im Tracker
-  const total = await day.getByTestId('day-total').textContent()
+  await expect(day.getByTestId('day-total')).toHaveText('0m')
   await day.getByRole('button', { name: 'Voriger Tag' }).click()
-  const yesterday = await day.getByTestId('day-total').textContent()
-  await page.getByRole('link', { name: 'Tracker' }).click()
-  await expect(page.getByTestId('day-total')).toHaveText(total!)
-  await page.getByRole('button', { name: 'Voriger Tag' }).click()
-  await expect(page.getByTestId('day-total')).toHaveText(yesterday!)
+  await expect(day.getByTestId('day-total')).toHaveText('2h 28m')
   // Auswahl „Heute“ bleibt gemerkt
+  await page.getByRole('link', { name: 'Tracker' }).click()
   await page.getByRole('link', { name: 'Statistik' }).click()
   await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toBeVisible()
   await seg.getByRole('button', { name: '7 Tage' }).click()

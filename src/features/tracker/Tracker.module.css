@@ -4,9 +4,7 @@
   padding: 44px 32px 80px;
   display: grid;
   grid-template-columns: 1fr 330px;
-  grid-template-areas:
-    't c'
-    'w c';
+  grid-template-areas: 't c';
   column-gap: 80px;
   row-gap: 72px;
   align-items: start;
@@ -14,11 +12,6 @@
 
 .timer {
   grid-area: t;
-  min-width: 0;
-}
-
-.dayArea {
-  grid-area: w;
   min-width: 0;
 }
 
@@ -78,14 +71,10 @@
   transition: background 0.2s, color 0.2s;
 }
 
-.day:hover {
-  color: var(--text);
+.day {
+  cursor: default;
 }
 
-.inWeek {
-  background: var(--panel);
-  color: var(--mute);
-}
 
 .dark {
   color: #111216;
@@ -95,62 +84,17 @@
   color: var(--text);
 }
 
-.sel {
-  box-shadow: inset 0 0 0 1.5px var(--text);
-}
 
 .today {
   box-shadow: inset 0 0 0 1.5px var(--signal);
 }
 
-.today.sel {
-  box-shadow:
-    inset 0 0 0 1.5px var(--signal),
-    inset 0 0 0 3px var(--bg);
-}
-
-/* Woche */
-.week {
-  margin-top: 48px;
-  padding-top: 28px;
-  border-top: 1px solid var(--line);
-}
-
-.weekNavLabel {
-  min-width: 112px !important;
-  font-size: 12px !important;
-}
-
-.totalSmall {
-  margin: 14px 0;
-  font-family: var(--font-mono);
-  font-weight: 300;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-  color: var(--mute);
-}
-
-.bar {
-  display: flex;
-  gap: 2px;
-  height: 4px;
-  margin-bottom: 16px;
-  border-radius: 2px;
-  overflow: hidden;
-  background: var(--panel);
-  opacity: 0.8;
-}
-
-.bar span {
-  height: 100%;
-}
 
 @media (max-width: 880px) {
   .wrap {
     grid-template-columns: 1fr;
     grid-template-areas:
       't'
-      'w'
       'c';
     padding: 36px 20px 72px;
     row-gap: 56px;

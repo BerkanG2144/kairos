@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { daysLabel, rangeStats, streaks } from './stats.ts'
+import { daysLabel, rangeStats } from './stats.ts'
 import { dayKey } from './time.ts'
 import type { Act, ByDay } from './types.ts'
 
@@ -13,41 +13,6 @@ const today = new Date(2026, 10, 18, 15, 0)
 /** Lerntage relativ zu heute: { -1: {a: 3600} } */
 const days = (spec: Record<number, Record<string, number>>): ByDay =>
   Object.fromEntries(Object.entries(spec).map(([off, m]) => [dayKey(new Date(2026, 10, 18 + Number(off))), m]))
-
-describe('streaks', () => {
-  it('zählt ab heute, wenn heute gelernt', () => {
-    expect(streaks(days({ 0: { a: 60 }, '-1': { a: 100 }, '-2': { a: 100 }, '-4': { a: 100 } }), today)).toEqual({ cur: 3, best: 3 })
-  })
-  it('zählt ab gestern, wenn heute (noch) nicht gelernt', () => {
-    expect(streaks(days({ '-1': { a: 100 }, '-2': { a: 100 } }), today).cur).toBe(2)
-    expect(streaks(days({ 0: { a: 59 }, '-1': { a: 100 } }), today).cur).toBe(1)
-  })
-  it('Lücke von 2 Tagen → 0', () => {
-    expect(streaks(days({ '-2': { a: 100 } }), today).cur).toBe(0)
-  })
-  it('Pause und < 60 s zählen nicht', () => {
-    expect(streaks(days({ 0: { [PAUSE]: 9999, a: 30 }, '-1': { a: 100 } }), today)).toEqual({ cur: 1, best: 1 })
-  })
-  it('Rekord über alle Zeit, auch über Monats- und Jahresgrenzen', () => {
-    const byDay: ByDay = {
-      '2025-12-30': { a: 100 },
-      '2025-12-31': { a: 100 },
-      '2026-01-01': { a: 100 },
-      '2026-01-02': { a: 100 },
-      '2026-01-04': { a: 100 },
-      '2026-11-17': { a: 100 },
-    }
-    expect(streaks(byDay, today)).toEqual({ cur: 1, best: 4 })
-  })
-  it('über die Zeitumstellung hinweg zusammenhängend', () => {
-    const byDay: ByDay = { '2026-03-28': { a: 100 }, '2026-03-29': { a: 100 }, '2026-03-30': { a: 100 }, '2026-10-25': { a: 100 }, '2026-10-26': { a: 100 } }
-    expect(streaks(byDay, new Date(2026, 2, 30, 12)).cur).toBe(3)
-    expect(streaks(byDay, today).best).toBe(3)
-  })
-  it('leer', () => {
-    expect(streaks({}, today)).toEqual({ cur: 0, best: 0 })
-  })
-})
 
 describe('rangeStats', () => {
   const byDay = days({
