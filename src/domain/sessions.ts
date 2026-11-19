@@ -44,6 +44,16 @@ export type Block = {
  * Zusammengefasst wird je Fach+Task, wenn die Lücke höchstens MERGE_GAP_SEC beträgt.
  */
 export function blocks(state: State, now: number): Block[] {
+  // byDay, Task-Zeiten und Kalender fragen pro Sekunde mit demselben (state, now) – einmal rechnen reicht.
+  if (cache && cache.state === state && cache.now === now) return cache.out
+  const out = computeBlocks(state, now)
+  cache = { state, now, out }
+  return out
+}
+
+let cache: { state: State; now: number; out: Block[] } | null = null
+
+function computeBlocks(state: State, now: number): Block[] {
   const raw: { a: ActId; k?: string; t0: number; t1: number; live: boolean }[] = []
   for (const m in state.months)
     for (const [a, t0, t1, k] of state.months[m]?.s ?? []) raw.push({ a, ...(k ? { k } : {}), t0, t1, live: false })

@@ -125,3 +125,12 @@ describe('deleteTracked', () => {
     expect(deleteTracked(s, { a: 'x', start: 0, end: 1 }, 1)).toBe(s)
   })
 })
+
+describe('deleteTracked mit leerer Task-ID', () => {
+  it("Session mit k = '' wird wie „ohne Task“ gelöscht", () => {
+    const s = st([['m', at('2026-11-18T10:00:00'), at('2026-11-18T10:30:00'), '']])
+    const b = trackedByDay(s, ['2026-11-18'], 0)['2026-11-18']![0]!
+    expect(b.k).toBeUndefined()
+    expect(Object.values(deleteTracked(s, b, 1).months).flatMap((m) => m.s)).toEqual([])
+  })
+})

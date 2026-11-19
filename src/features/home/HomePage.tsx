@@ -1,6 +1,7 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { cx } from '../../components/cx.ts'
 import { Hours } from '../../components/Hours.tsx'
+import { useFitHeight } from '../../components/useFitHeight.ts'
 import ui from '../../components/ui.module.css'
 import { planByDay } from '../../domain/plan.ts'
 import { byDay } from '../../domain/sessions.ts'
@@ -54,19 +55,10 @@ export function HomePage() {
     onDrop: (id, d, i) => dispatch((s, n) => moveOpenTask(s, id, d, i, n)),
   })
 
-  useFlip(list, !drag)
+  useFlip(list, !drag, [state, doneView])
 
   // Spalten reichen bis zum Fensterrand; Liste und Kalender scrollen für sich.
-  useLayoutEffect(() => {
-    const g = grid.current
-    if (!g) return
-    const fit = () => {
-      g.style.height = `${Math.max(420, window.innerHeight - g.getBoundingClientRect().top - window.scrollY - 20)}px`
-    }
-    fit()
-    window.addEventListener('resize', fit)
-    return () => window.removeEventListener('resize', fit)
-  }, [])
+  useFitHeight(grid, 420)
 
   const card = (t: Task, opts: { ghost?: boolean; draggable?: boolean } = {}) => (
     <TaskCard

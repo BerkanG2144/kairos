@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cx } from '../../components/cx.ts'
 import { Hours } from '../../components/Hours.tsx'
+import { useFitHeight } from '../../components/useFitHeight.ts'
 import ui from '../../components/ui.module.css'
 import { MONTHS } from '../../domain/constants.ts'
 import { byDay as sessionsByDay } from '../../domain/sessions.ts'
@@ -58,7 +59,7 @@ export function PlanPage() {
     onDrop: (id, d, i) => dispatch((s, n) => moveTask(s, id, d, i, n)),
   })
 
-  useFlip(band, !drag)
+  useFlip(band, !drag, [state, days])
 
   // Über Mitternacht offen: heute muss im Band liegen.
   useEffect(() => {
@@ -77,17 +78,10 @@ export function PlanPage() {
     [today],
   )
 
-  // Einmal beim Öffnen zu heute; Höhe des Bands bis zum Fensterrand.
+  // Höhe des Bands bis zum Fensterrand; einmal beim Öffnen zu heute.
+  useFitHeight(band, 380)
   useLayoutEffect(() => {
-    const b = band.current
-    if (!b) return
-    const fit = () => {
-      b.style.height = `${Math.max(380, window.innerHeight - b.getBoundingClientRect().top - window.scrollY - 20)}px`
-    }
-    fit()
     scrollToToday(false)
-    window.addEventListener('resize', fit)
-    return () => window.removeEventListener('resize', fit)
   }, []) // nur beim ersten Rendern
 
   // Links Tage angefügt → Scrollposition ausgleichen, damit nichts springt.

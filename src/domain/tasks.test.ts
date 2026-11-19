@@ -240,6 +240,27 @@ describe('Laufender Task ist oben fix', () => {
     expect(runningTask(s)).toBe('t3')
   })
 
+  it('bleibt oben: neuer Task „oben“, Pause → Weiter, Rollover', () => {
+    let s = base('A', 'B', 'C')
+    s = toggleTaskTimer(s, 't2', ms(0), act(s, 'Mathe'))
+    s = addTask(s, 'Neu', '2026-11-18', ms(1), { top: true, id: 'tn' })
+    expect(titles(s, '2026-11-18')).toEqual(['B', 'Neu', 'A', 'C'])
+    // Pause: B ist frei, C wird darüber gezogen; Weiter → B wieder oben
+    s = clickPause(s, ms(2))
+    s = moveTask(s, 't3', '2026-11-18', 0, ms(2))
+    expect(titles(s, '2026-11-18')[0]).toBe('C')
+    s = clickPause(s, ms(3))
+    expect(runningTask(s)).toBe('t2')
+    expect(titles(s, '2026-11-18')[0]).toBe('B')
+    // Rollover: offene von gestern kommen nach oben – aber unter den laufenden
+    s = addTask(s, 'Gestern', '2026-11-17', ms(3), { id: 'tg' })
+    s = rollover(s, '2026-11-18', ms(4))
+    expect(titles(s, '2026-11-18').slice(0, 2)).toEqual(['B', 'Gestern'])
+    // Ablegen ganz oben landet direkt unter dem laufenden
+    s = moveTask(s, 't1', '2026-11-18', minDropIndex(s, '2026-11-18'), ms(5))
+    expect(titles(s, '2026-11-18').slice(0, 2)).toEqual(['B', 'A'])
+  })
+
   it('minDropIndex: am Tag des laufenden Tasks erst ab Position 1, sonst 0; Pause hebt es auf', () => {
     let s = base('A', 'B')
     expect(minDropIndex(s, '2026-11-18')).toBe(0)

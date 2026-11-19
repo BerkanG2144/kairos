@@ -70,7 +70,8 @@ export function deleteTracked(s: State, b: Pick<Tracked, 'a' | 'k' | 'start' | '
   let months = s.months
   for (const [mk, doc] of Object.entries(s.months)) {
     if (mk < first || mk > last) continue
-    const keep = doc.s.filter(([a, st, en, k]) => !(a === b.a && k === b.k && st >= b.start && en <= b.end))
+    // leere Task-ID wie „ohne Task“ behandeln (so gruppiert auch blocks())
+    const keep = doc.s.filter(([a, st, en, k]) => !(a === b.a && (k || undefined) === (b.k || undefined) && st >= b.start && en <= b.end))
     if (keep.length !== doc.s.length) months = { ...months, [mk]: { ...doc, s: keep, u: nowMs } }
   }
   return months === s.months ? s : { ...s, months }

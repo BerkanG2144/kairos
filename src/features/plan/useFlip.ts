@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
 
 type Pos = { scroller: Element | null; x: number; y: number }
 
@@ -17,8 +17,24 @@ function posOf(el: HTMLElement): Pos {
  * innerhalb derselben Liste (abhaken, umsortieren), gleitet sie von der alten an die neue Stelle.
  * Abgehakte Karten warten kurz (sichtbar ausgegraut) und „fliegen“ dann nach unten.
  */
-export function useFlip(root: RefObject<HTMLElement | null>, enabled: boolean) {
+/** `deps`: alles, was Kartenpositionen ändert (State, sichtbarer Zeitraum …) – feste Länge je Aufrufer. */
+export function useFlip(root: RefObject<HTMLElement | null>, enabled: boolean, deps: readonly unknown[]) {
   const prev = useRef(new Map<string, Pos>())
+
+  // Nach Größenänderungen nur neu messen (keine Animation), damit die nächste Bewegung stimmt.
+  useEffect(() => {
+    const remeasure = () => {
+      const el = root.current
+      if (!el) return
+      const m = new Map<string, Pos>()
+      for (const card of el.querySelectorAll<HTMLElement>('[data-task]')) m.set(card.dataset.task!, posOf(card))
+      prev.current = m
+    }
+    window.addEventListener('resize', remeasure)
+    return () => window.removeEventListener('resize', remeasure)
+  }, [root])
+
+  // Nur wenn sich die Daten ändern (abhaken, umsortieren, starten …) – nicht bei jedem Timer-Tick.
   useLayoutEffect(() => {
     const el = root.current
     if (!el) return
@@ -50,5 +66,5 @@ export function useFlip(root: RefObject<HTMLElement | null>, enabled: boolean) {
       })
     }
     prev.current = next
-  })
+  }, [root, enabled, ...deps]) // eslint-disable-line react-hooks/exhaustive-deps
 }

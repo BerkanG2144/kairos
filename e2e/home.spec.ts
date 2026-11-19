@@ -191,3 +191,17 @@ test('Hover über getrackten Block: Details, Stoppen, Löschen mit Rückfrage', 
   // Task bleibt, nur die Zeit ist weg
   await expect(card).toBeVisible()
 })
+
+test('Home passt sich an, wenn die Kopfzeile umbricht (Mini-Timer erscheint) – kein Seiten-Scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 760 })
+  await freezeAt(page)
+  await page.goto('/')
+  await importBackup(page)
+  await add(page, 'Ein ziemlich langer Task-Titel, damit die Kopfzeile umbricht')
+  const card = page.getByTestId('home-open').locator('[data-task]').first()
+  await card.hover()
+  await card.getByRole('button', { name: /starten$/ }).click()
+  await page.getByRole('menuitemradio', { name: 'Mathe' }).click()
+  await page.clock.runFor(2000)
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+})

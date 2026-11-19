@@ -13,6 +13,16 @@ export const TASK_TITLE_MAX = 140
 
 const byOrder = (a: Task, b: Task) => a.o - b.o || a.id.localeCompare(b.id)
 
+/**
+ * Anzeige-Reihenfolge eines Tages: der laufende Task immer zuerst (er ist oben fix –
+ * egal ob über ▶, Pause → Weiter, „oben einfügen“ oder Rollover), danach nach `o`.
+ * Die einzige Stelle, an der diese Regel gilt; minDropIndex leitet sich daraus ab.
+ */
+const displayOrder = (s: State) => {
+  const run = runningTask(s)
+  return (a: Task, b: Task) => (a.id === run ? -1 : b.id === run ? 1 : byOrder(a, b))
+}
+
 export const newTaskId = (nowMs: number = Date.now()): string => 't' + nowMs.toString(36) + Math.random().toString(36).slice(2, 6)
 
 export function allTasks(s: State): Task[] {
@@ -36,12 +46,13 @@ export function findTask(s: State, id: string): Task | null {
 export function tasksByDay(s: State): Record<string, Task[]> {
   const out: Record<string, Task[]> = {}
   for (const t of allTasks(s)) (out[t.d] ??= []).push(t)
-  for (const d in out) out[d]!.sort(byOrder)
+  const cmp = displayOrder(s)
+  for (const d in out) out[d]!.sort(cmp)
   return out
 }
 
 export const tasksOn = (s: State, day: string): Task[] =>
-  (s.months[monthKeyOfDay(day)]?.k ?? []).filter((t) => t.d === day).sort(byOrder)
+  (s.months[monthKeyOfDay(day)]?.k ?? []).filter((t) => t.d === day).sort(displayOrder(s))
 
 /** Schreibt Tasks (anlegen oder ersetzen, gleiche id). Wechselt der Tag den Monat, ziehen sie um. */
 function putTasks(s: State, list: Task[], nowMs: number): State {
