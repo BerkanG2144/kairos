@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { dayLabel, heatAlpha, longDayLabel, monthGrid, pct, piePath, summarize, todayAndWeek, toItems, UNKNOWN_COLOR, weekDays, weekLabel } from './summary.ts'
+import { dayLabel, longDayLabel, pct, piePath, summarize, todayAndWeek, toItems, UNKNOWN_COLOR, weekDays, weekLabel } from './summary.ts'
 import { dayKey } from './time.ts'
 import type { Act } from './types.ts'
 
@@ -59,28 +59,6 @@ describe('Beschriftungen', () => {
     expect(weekLabel(new Date(2026, 10, 16))).toEqual({ text: '16.–22. Nov', kw: 47 })
     expect(weekLabel(new Date(2026, 10, 30))).toEqual({ text: '30. Nov – 6. Dez', kw: 49 })
     expect(weekLabel(new Date(2026, 11, 28))).toEqual({ text: '28. Dez – 3. Jan', kw: 53 })
-  })
-})
-
-describe('heatAlpha', () => {
-  it('unter 60 s kein Lerntag', () => {
-    expect(heatAlpha(0)).toBeNull()
-    expect(heatAlpha(59)).toBeNull()
-  })
-  it('steigt bis 4 h linear, dann gedeckelt', () => {
-    expect(heatAlpha(60)).toBeCloseTo(0.32 + 0.68 * (60 / 14400))
-    expect(heatAlpha(2 * 3600)).toBeCloseTo(0.66)
-    expect(heatAlpha(4 * 3600)).toBe(1)
-    expect(heatAlpha(10 * 3600)).toBe(1)
-  })
-})
-
-describe('monthGrid', () => {
-  it('Offset Mo-basiert und Tage', () => {
-    expect(monthGrid(2026, 10)).toEqual({ offset: 6, days: 30 }) // 1.11.2026 = Sonntag
-    expect(monthGrid(2026, 1)).toEqual({ offset: 6, days: 28 }) // 1.2.2026 = Sonntag
-    expect(monthGrid(2028, 1)).toEqual({ offset: 1, days: 29 }) // Schaltjahr, 1.2.2028 = Dienstag
-    expect(monthGrid(2027, 2)).toEqual({ offset: 0, days: 31 }) // 1.3.2027 = Montag
   })
 })
 

@@ -1,24 +1,18 @@
+/* Tracker: nur der Timer – mittig im Fenster (optisch leicht über der Mitte) */
 .wrap {
   max-width: var(--w-narrow);
+  min-height: calc(100vh - 90px);
   margin: 0 auto;
-  padding: 44px 32px 80px;
-  display: grid;
-  grid-template-columns: 1fr 330px;
-  grid-template-areas: 't c';
-  column-gap: 80px;
-  row-gap: 72px;
-  align-items: start;
+  padding: 24px 32px 12vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timer {
-  grid-area: t;
+  width: 100%;
+  max-width: 760px;
   min-width: 0;
-}
-
-.cal {
-  grid-area: c;
-  position: sticky;
-  top: 64px;
 }
 
 /* Tagesbilanz */
@@ -42,65 +36,9 @@
   flex: none;
 }
 
-/* Monatskalender */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-top: 22px;
-}
-
-.wd {
-  padding-bottom: 6px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--dim);
-  text-align: center;
-}
-
-.day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--dim);
-  transition: background 0.2s, color 0.2s;
-}
-
-.day {
-  cursor: default;
-}
-
-
-.dark {
-  color: #111216;
-}
-
-.light {
-  color: var(--text);
-}
-
-
-.today {
-  box-shadow: inset 0 0 0 1.5px var(--signal);
-}
-
-
 @media (max-width: 880px) {
   .wrap {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      't'
-      'c';
     padding: 36px 20px 72px;
-    row-gap: 56px;
-  }
-  .cal {
-    position: static;
   }
   .split {
     flex-direction: column;

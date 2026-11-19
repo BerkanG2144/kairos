@@ -1,5 +1,5 @@
-/** Zusammenfassungen und Beschriftungen für Tagesbilanz, Woche und Monatskalender. */
-import { LEARN_DAY_MIN_SEC, MONTHS, MONTHS_SHORT, PAUSE } from './constants.ts'
+/** Zusammenfassungen und Beschriftungen für Tagesbilanz, Home und Plan. */
+import { MONTHS, MONTHS_SHORT, PAUSE } from './constants.ts'
 import { learned } from './sessions.ts'
 import { addDays, dayKey, isoWeek, mondayOf } from './time.ts'
 import type { Act, ByDay, DayTotals } from './types.ts'
@@ -66,10 +66,6 @@ export function weekLabel(monday: Date): { text: string; kw: number } {
 }
 
 /** Deckkraft im Monatskalender: null unter 60 s, sonst 0.32 + 0.68·min(1, sek/4h). */
-export function heatAlpha(sec: number): number | null {
-  if (sec < LEARN_DAY_MIN_SEC) return null
-  return 0.32 + 0.68 * Math.min(1, sec / (4 * 3600))
-}
 
 /** Lernzeit eines Tages aus byDay. */
 export const learnedOn = (byDay: ByDay, d: Date): number => learned(byDay[dayKey(d)])
@@ -80,10 +76,6 @@ export function todayAndWeek(byDay: ByDay, today: Date): { today: number; week: 
   return { today: learnedOn(byDay, today), week }
 }
 
-/** Monatsraster: leere Zellen vor dem 1. (Mo-basiert) und Anzahl Tage. */
-export function monthGrid(y: number, m: number): { offset: number; days: number } {
-  return { offset: (new Date(y, m, 1).getDay() + 6) % 7, days: new Date(y, m + 1, 0).getDate() }
-}
 
 /** SVG-Pfad eines Tortenstücks (Winkel in Radiant, 0 = 3 Uhr, im Uhrzeigersinn). */
 export function piePath(cx: number, cy: number, r: number, a0: number, a1: number): string {

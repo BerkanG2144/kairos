@@ -103,13 +103,17 @@ test('Lücken-Erkennung: Seite war zu → rückwirkend stoppen', async ({ page }
   await expect.poll(() => dayTotal(page)).toBe('10m')
 })
 
-test('Tracker ohne Tages-/Wochenbilanz; Statistik ohne Serie und Wochen-Diagramm', async ({ page }) => {
+test('Tracker: nur Timer, mittig; Statistik ohne Serie und Wochen-Diagramm', async ({ page }) => {
   await freezeAt(page)
   await page.goto('/#tracker')
   await importBackup(page)
   await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toHaveCount(0)
   await expect(page.getByTestId('week-total')).toHaveCount(0)
-  await expect(page.getByText('November 2026')).toBeVisible() // Monatskalender bleibt
+  await expect(page.getByText('November 2026')).toHaveCount(0) // kein Monatskalender
+  // Timer steht mittig
+  const t = (await page.getByRole('timer').boundingBox())!
+  const vw = page.viewportSize()!.width
+  expect(Math.abs(t.x + t.width / 2 - vw / 2)).toBeLessThan(20)
   await page.getByRole('link', { name: 'Statistik' }).click()
   await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: '7 Tage' }).click()
   await expect(page.getByTestId('kpi-total')).toBeVisible()
