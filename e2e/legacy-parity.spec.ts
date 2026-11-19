@@ -33,7 +33,7 @@ async function legacySnapshot(page: Page): Promise<Snapshot> {
   const day = (await page.textContent('#dTotal'))!
   const dayLegend = norm(await page.innerText('#dLegend'))
   await page.evaluate(() => (location.hash = '#organisation'))
-  const side = await Promise.all(['#oToday', '#oDue', '#oExams'].map(async (s) => norm(await page.innerText(s))))
+  const side = await page.locator('#oExams .exr b').allTextContents()
   return { kpis, rows, day, dayLegend, side }
 }
 
@@ -52,18 +52,13 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
   await page.getByRole('button', { name: 'Voriger Tag' }).click()
   const day = (await page.getByTestId('day-total').textContent())!
   const dayLegend = norm(await page.getByRole('region', { name: 'Tagesbilanz' }).locator('svg + div').innerText())
+  // Klausuren: Namen in derselben Reihenfolge (Organisation zeigt Karten)
   await page.getByRole('link', { name: 'Organisation' }).click()
-  const side = await Promise.all(
-    ['Heute', 'Fällig', 'Klausuren'].map(async (name) => {
-      const region = page.getByRole('region', { name })
-      const label = await region.locator('> span').first().innerText()
-      return norm((await region.innerText()).replace(label, ''))
-    }),
-  )
+  const side = await page.locator('[data-exam][data-upcoming] b').allTextContents()
   return { kpis, rows, day, dayLegend, side }
 }
 
-test('Statistik und Organisation zeigen dieselben Zahlen wie die Legacy-Datei', async ({ browser }) => {
+test('Statistik und Klausuren stimmen mit der Legacy-Datei überein wie die Legacy-Datei', async ({ browser }) => {
   const ctxL = await browser.newContext({ locale: 'de-DE', timezoneId: 'Europe/Berlin', viewport: { width: 1280, height: 900 } })
   const ctxA = await browser.newContext({ locale: 'de-DE', timezoneId: 'Europe/Berlin', viewport: { width: 1280, height: 900 } })
   const pl = await ctxL.newPage()
@@ -74,9 +69,7 @@ test('Statistik und Organisation zeigen dieselben Zahlen wie die Legacy-Datei', 
   const legacy = await legacySnapshot(pl)
   const app = await appSnapshot(pa)
   expect(legacy.rows.length).toBeGreaterThan(0)
-  expect(legacy.side[0]).toContain('Sprechstunde')
-  expect(legacy.side[1]).toContain('überfällig')
-  expect(legacy.side[2]).toContain('HM I')
+  expect(legacy.side).toContain('HM I')
   expect(app).toEqual(legacy)
   await ctxL.close()
   await ctxA.close()

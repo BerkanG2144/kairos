@@ -59,6 +59,8 @@
 }
 
 .ad {
+  position: relative;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -67,6 +69,21 @@
   padding: 5px;
   border-left: 1px solid var(--line);
   overflow: hidden;
+}
+
+.ad:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* Hinweis „+“ beim Hovern über die freie Fläche */
+.ad:hover::after {
+  content: '+';
+  position: absolute;
+  right: 7px;
+  bottom: 4px;
+  font-size: 13px;
+  color: var(--mute);
+  pointer-events: none;
 }
 
 .wkscroll {

@@ -160,6 +160,14 @@ describe('Timer am Task', () => {
     expect(taskTimes(s, sec(99))).toEqual({ t1: 1200, t2: 600 })
   })
 
+  it('unter 5 min gestoppt zählt nicht zur Task-Zeit; laufend schon', () => {
+    let s = base('A')
+    s = toggleTaskTimer(s, 't1', ms(0), act(s, 'Mathe'))
+    expect(taskTimes(s, sec(3))).toEqual({ t1: 180 })
+    s = toggleTaskTimer(s, 't1', ms(3))
+    expect(taskTimes(s, sec(10))).toEqual({})
+  })
+
   it('Fach im Tracker anklicken beendet den Task-Bezug', () => {
     let s = base('A')
     s = toggleTaskTimer(s, 't1', ms(0), act(s, 'Mathe'))

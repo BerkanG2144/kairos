@@ -11,6 +11,7 @@ const TABS: { r: Route; label: string }[] = [
   { r: 'plan', label: 'Plan' },
   { r: 'tracker', label: 'Tracker' },
   { r: 'statistik', label: 'Statistik' },
+  { r: 'kalender', label: 'Kalender' },
   { r: 'organisation', label: 'Organisation' },
 ]
 

@@ -48,8 +48,8 @@ test('Fach anlegen → Timer → Pause → Weiter → Neuladen läuft weiter', a
   await expect(timer).toHaveText('00:00:00')
   await expect(page.getByRole('button', { name: 'Stopp' })).toHaveCount(0)
   await expectNoHorizontalScroll(page)
-  // 65 s + 12 s Lernzeit, 30 s Pause
-  await expect.poll(() => dayTotal(page)).toBe('1m')
+  // 65 s + 12 s Lernzeit, 30 s Pause – alles unter 5 min zählt nicht
+  await expect.poll(() => dayTotal(page)).toBe('0m')
 })
 
 test('Fach löschen mit Bestätigung, gleicher Name reaktiviert', async ({ page, isMobile }) => {
@@ -139,4 +139,48 @@ test('Statistik: „Heute“ zeigt die Tagesbilanz', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toBeVisible()
   await seg.getByRole('button', { name: '7 Tage' }).click()
   await expect(page.getByTestId('kpi-total')).toBeVisible()
+})
+
+test('Unter 5 min: nirgends sichtbar (Home, Plan, Statistik, Kalender, Task); ab 5 min überall', async ({ page }) => {
+  await freezeAt(page)
+  await page.goto('/#tracker')
+  await page.getByRole('button', { name: 'Fach hinzufügen' }).click()
+  await page.getByLabel('Neues Fach').fill('Mathe')
+  await page.keyboard.press('Enter')
+  await page.getByRole('link', { name: 'Home' }).click()
+  const input = page.getByRole('textbox', { name: 'Task für heute hinzufügen' })
+  await input.fill('Kurz')
+  await input.press('Enter')
+  const card = page.locator('[data-task]', { hasText: 'Kurz' })
+  await card.hover()
+  await card.getByRole('button', { name: 'Kurz starten' }).click()
+  await page.getByRole('menuitemradio', { name: 'Mathe' }).click()
+  await page.clock.runFor(4 * 60_000)
+  await card.getByRole('button', { name: 'Kurz stoppen' }).click()
+
+  const check = async (expected: { home: string; stats: string; task: number; blocks: number }) => {
+    await page.getByRole('link', { name: 'Home' }).click()
+    await expect(page.getByTestId('home-today')).toHaveText(expected.home)
+    await expect(page.getByTestId('home-week')).toHaveText(expected.home.replace('heute', 'diese Woche'))
+    await expect(card.getByTestId('task-time')).toHaveCount(expected.task)
+    await expect(page.getByTestId('day-timeline').locator('[data-tracked]')).toHaveCount(expected.blocks)
+    await page.getByRole('link', { name: 'Plan', exact: true }).click()
+    await expect(page.getByTestId('plan-week')).toHaveText(expected.home.replace('heute', 'diese Woche'))
+    await page.getByRole('link', { name: 'Statistik' }).click()
+    await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: '7 Tage' }).click()
+    await expect(page.getByTestId('kpi-total')).toHaveText(expected.stats)
+    await page.getByRole('link', { name: 'Kalender' }).click()
+    await page.getByRole('button', { name: 'Woche' }).click()
+    await expect(page.locator('[data-col="2026-11-18"] [data-tracked]')).toHaveCount(expected.blocks)
+  }
+  await check({ home: '0h 00m heute', stats: '0m', task: 0, blocks: 0 })
+
+  // 10 min später noch einmal 6 min → zählt
+  await page.clock.runFor(10 * 60_000)
+  await page.getByRole('link', { name: 'Home' }).click()
+  await card.hover()
+  await card.getByRole('button', { name: 'Kurz starten' }).click()
+  await page.clock.runFor(6 * 60_000)
+  await card.getByRole('button', { name: 'Kurz stoppen' }).click()
+  await check({ home: '0h 06m heute', stats: '6m', task: 1, blocks: 1 })
 })

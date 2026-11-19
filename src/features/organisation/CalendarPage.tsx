@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { navigate } from '../../app/route.ts'
 import { cx } from '../../components/cx.ts'
 import { Nav } from '../../components/Nav.tsx'
 import { Seg } from '../../components/Seg.tsx'
@@ -10,7 +9,6 @@ import { weekLabel } from '../../domain/summary.ts'
 import { findTask } from '../../domain/tasks.ts'
 import { addDays, dayKey, mondayOf, parseDayKey, startOfDay } from '../../domain/time.ts'
 import { trackedByDay } from '../../domain/tracked.ts'
-import { start } from '../../domain/tracker.ts'
 import type { PlanItem } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
 import { useNow } from '../../state/useNow.ts'
@@ -18,7 +16,6 @@ import { usePref } from '../../state/usePref.ts'
 import { ItemEditor } from './ItemEditor.tsx'
 import { MonthView } from './MonthView.tsx'
 import styles from './Org.module.css'
-import { Sidebar } from './Sidebar.tsx'
 import type { OrgActions } from './types.ts'
 import { WeekView } from './WeekView.tsx'
 
@@ -27,7 +24,8 @@ const isView = (x: unknown): x is View => x === 'week' || x === 'month'
 
 export type Editing = { it: PlanItem; isNew: boolean }
 
-export function OrgPage() {
+/** Kalender (Woche/Monat): geplante Einträge und getrackte Zeit. Oben in „fällig“ per Klick eine Abgabe anlegen. */
+export function CalendarPage() {
   const state = useAppState()
   const dispatch = useDispatch()
   // Jede Minute neu zeichnen (Jetzt-Linie, „heute“, Fälligkeiten); läuft der Timer, öfter (Live-Block).
@@ -51,11 +49,6 @@ export function OrgPage() {
     open: (it) => setEditing({ it, isNew: false }),
     create: (d, type, t, e) => setEditing({ it: newDraft(newId(), d, type, t, e), isNew: true }),
     toggleDone: (id) => dispatch((s, n) => toggleDone(s, id, n)),
-  }
-
-  const go = (actId: string) => {
-    dispatch((s, n) => start(s, actId, n))
-    navigate('tracker')
   }
 
   const shift = (dir: 1 | -1) =>
@@ -122,7 +115,6 @@ export function OrgPage() {
             />
           )}
         </section>
-        <Sidebar state={state} today={today} actions={actions} onGo={go} />
       </div>
       {editing && <ItemEditor key={editing.it.id} it={editing.it} isNew={editing.isNew} onClose={() => setEditing(null)} />}
     </main>

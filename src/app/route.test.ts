@@ -8,12 +8,13 @@ describe('parseHash', () => {
     ['#plan', 'plan'],
     ['#tracker', 'tracker'],
     ['#statistik', 'statistik'],
+    ['#kalender', 'kalender'],
     ['#organisation', 'organisation'],
     ['#klausuren', 'organisation'],
     ['#unbekannt', 'home'],
   ] as const)('%s → %s', (h, r) => expect(parseHash(h)).toBe(r))
 
   it('hrefOf ist die Umkehrung', () => {
-    for (const r of ['home', 'plan', 'tracker', 'statistik', 'organisation'] as const) expect(parseHash(hrefOf(r))).toBe(r)
+    for (const r of ['home', 'plan', 'tracker', 'statistik', 'kalender', 'organisation'] as const) expect(parseHash(hrefOf(r))).toBe(r)
   })
 })

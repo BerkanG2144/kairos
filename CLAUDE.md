@@ -39,8 +39,10 @@ Fach-Farben (Reihenfolge der Vergabe):
   Lokal einbinden (`@fontsource/*`), damit die App offline funktioniert.
 - Hintergrund: zwei sehr schwache radiale Verläufe (gelb oben rechts, lila unten links).
 - Labels: 11 px, Großbuchstaben, letter-spacing .24em, `--mute`.
-- Tracker/Statistik: max-width ~1120 px. Organisation: breiter (~1640 px), Schrift ~2 px größer,
-  Seitenleiste 360 px mit Trennlinie. Berkan legt Wert darauf, dass es dort nicht gequetscht wirkt.
+- Tabs: Home · Plan · Tracker · Statistik · Kalender (`#kalender`, Woche/Monat) · Organisation
+  (`#organisation`, Klausuren als Fortschrittskarten).
+- Tracker: nur der Timer, mittig. Statistik: max-width ~1120 px. Home, Plan, Kalender, Organisation:
+  breiter (~1640 px). Berkan legt Wert darauf, dass es nicht gequetscht wirkt.
 - **Nur Desktop/Laptop.** Handy wird nicht unterstützt (Berkans Entscheidung): keine neuen mobilen
   Layouts, Touch-Gesten oder Handy-Tests. Vorhandenes mobiles CSS darf bleiben, wird aber nicht gepflegt.
 
@@ -85,4 +87,8 @@ dürfen nie verloren gehen.
 - Fachliche Logik (Statistik, Tages-Splitting, Streaks, Fälligkeiten, Migration) als reine
   Funktionen in `src/domain/`, mit Unit-Tests. Komponenten bleiben dünn.
 - Zeitstempel von Sessions in Sekunden, lokale Zeitzone für alle Tagesgrenzen.
+- **Unter 5 min zählt nirgends** (Berkans Regel): Sessions werden je Fach+Task zu Blöcken
+  zusammengefasst (Lücke ≤ 60 s); beendete Blöcke < 5 min erscheinen weder im Kalender noch in
+  Stunden, Statistik oder Task-Zeiten (`blocks`/`countedBlocks` in `src/domain/sessions.ts`).
+  Ein laufender Block zählt sofort. Gespeichert werden die Sessions trotzdem.
 - Vor jedem Commit: `npm run test` und `npm run build` müssen grün sein.

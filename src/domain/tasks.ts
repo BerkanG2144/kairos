@@ -4,6 +4,7 @@
  * Alle Funktionen sind rein (State → State).
  */
 import { PAUSE } from './constants.ts'
+import { countedBlocks } from './sessions.ts'
 import { monthKeyOfDay } from './time.ts'
 import { actById, start, stop } from './tracker.ts'
 import type { ActId, MonthDoc, State, Task } from './types.ts'
@@ -200,16 +201,12 @@ export function rollover(s: State, today: string, nowMs: number): State {
   return putTasks(s, list, nowMs)
 }
 
-/** Gelernte Sekunden je Task (inkl. laufendem Timer). */
+/** Gelernte Sekunden je Task (inkl. laufendem Timer; Blöcke unter 5 min zählen nicht). */
 export function taskTimes(s: State, nowSec: number): Record<string, number> {
   const out: Record<string, number> = {}
-  for (const k in s.months)
-    for (const x of s.months[k]!.s) {
-      const id = x[3]
-      if (id) out[id] = (out[id] ?? 0) + (x[2] - x[1])
-    }
-  const r = s.meta.run
-  const id = runningTask(s)
-  if (r && id) out[id] = (out[id] ?? 0) + Math.max(0, nowSec - r.t)
+  for (const b of countedBlocks(s, nowSec)) {
+    if (!b.k) continue
+    for (const [t0, t1] of b.parts) out[b.k] = (out[b.k] ?? 0) + (t1 - t0)
+  }
   return out
 }

@@ -41,8 +41,10 @@ test('App startet offline mit gespeicherten Daten', async ({ page, context }) =>
   // Alle Seiten funktionieren offline (Hash-Routing, keine Nachladevorgänge).
   await page.getByRole('link', { name: 'Statistik' }).click()
   await expect(page.getByTestId('kpi-total')).toBeVisible()
+  await page.getByRole('link', { name: 'Kalender' }).click()
+  await expect(page.getByRole('region', { name: 'Kalender' })).toBeVisible()
   await page.getByRole('link', { name: 'Organisation' }).click()
-  await expect(page.getByRole('region', { name: 'Heute' })).toBeVisible()
+  await expect(page.getByRole('form', { name: 'Klausur hinzufügen' })).toBeVisible()
   // Schriften kommen aus dem Cache.
   expect(await page.evaluate(() => document.fonts.check('16px "Space Grotesk"'))).toBe(true)
   await context.setOffline(false)

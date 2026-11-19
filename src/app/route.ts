@@ -1,12 +1,16 @@
 import { useSyncExternalStore } from 'react'
 
-export type Route = 'home' | 'plan' | 'tracker' | 'statistik' | 'organisation'
+export type Route = 'home' | 'plan' | 'tracker' | 'statistik' | 'kalender' | 'organisation'
 
-/** '#plan', '#tracker', '#statistik', '#organisation' (alt: '#klausuren'), sonst Home (Startseite). */
+/**
+ * '#plan', '#tracker', '#statistik', '#kalender' (Wochen-/Monatskalender),
+ * '#organisation' (Klausuren; alt: '#klausuren'), sonst Home (Startseite).
+ */
 export function parseHash(hash: string): Route {
   if (hash === '#plan') return 'plan'
   if (hash === '#tracker') return 'tracker'
   if (hash === '#statistik') return 'statistik'
+  if (hash === '#kalender') return 'kalender'
   if (hash === '#organisation' || hash === '#klausuren') return 'organisation'
   return 'home'
 }

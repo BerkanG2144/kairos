@@ -20,7 +20,7 @@ test('Home ist Startseite: Datum, Stunden, Tageskalender mit geplanten Einträge
   await expect(page.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { name: 'Mittwoch, 18. November' })).toBeVisible()
   await expect(page.getByTestId('home-week')).not.toHaveText(/^0h 00m/)
-  // geplanter Eintrag von heute aus Organisation
+  // geplanter Eintrag von heute aus dem Kalender
   await expect(page.getByTestId('day-timeline').getByLabel('Physik 11:00–12:30')).toBeVisible()
 })
 

@@ -34,8 +34,7 @@
 
 .orggrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--sidebar);
-  gap: 72px;
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 30px;
   align-items: start;
 }

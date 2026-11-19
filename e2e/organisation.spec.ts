@@ -10,12 +10,12 @@ async function at(page: Page, day: string, h: number, m = 0) {
   return { x: box.x + box.width / 2, y: box.y + (h - H0 + m / 60) * PX }
 }
 
-test.describe('Organisation (Maus)', () => {
+test.describe('Kalender (Maus)', () => {
   test.skip(({ isMobile }) => isMobile, 'Drag & Drop nur mit Maus')
 
   test.beforeEach(async ({ page }) => {
     await freezeAt(page)
-    await page.goto('/#organisation')
+    await page.goto('/#kalender')
     await page.getByRole('button', { name: 'Woche' }).click()
     await page.getByTestId('week-scroll').evaluate((el) => (el.scrollTop = 6 * 54)) // ab 06:00 sichtbar
   })
@@ -85,20 +85,22 @@ test.describe('Organisation (Maus)', () => {
   })
 })
 
-test('Abgabe abhaken in der Seitenleiste', async ({ page }) => {
+test('Kalender: Klick oben in „fällig“ legt eine Abgabe für den Tag an; keine Seitenleiste', async ({ page }) => {
   await freezeAt(page)
-  await page.goto('/#organisation')
-  await page.getByRole('button', { name: '+ Eintrag' }).click()
-  const dlg = page.getByRole('dialog')
+  await page.goto('/#kalender')
+  await page.getByRole('button', { name: 'Woche' }).click()
+  await expect(page.getByRole('region', { name: 'Fällig' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Heute' })).toHaveCount(0)
+  await page.locator('[data-allday="2026-11-20"]').click()
+  const dlg = page.getByRole('dialog', { name: 'Neuer Eintrag' })
   await expect(dlg.getByRole('button', { name: 'Abgabe', pressed: true })).toBeVisible()
   await dlg.getByLabel('Titel').fill('Blatt 5')
   await dlg.getByRole('button', { name: 'Speichern' }).click()
-
-  const due = page.getByRole('region', { name: 'Fällig' })
-  await expect(due).toContainText('heute 23:59')
-  await due.getByRole('checkbox', { name: 'Blatt 5 erledigt' }).click()
-  await expect(due.getByRole('checkbox', { name: 'Blatt 5 erledigt' })).toHaveAttribute('aria-checked', 'true')
-  await expect(due).toContainText('✓')
+  const chip = page.locator('[data-allday="2026-11-20"]').getByText('Blatt 5')
+  await expect(chip).toBeVisible()
+  // Klick auf den Eintrag öffnet ihn (legt keinen neuen an)
+  await chip.click()
+  await expect(page.getByRole('dialog', { name: 'Eintrag bearbeiten' })).toBeVisible()
 })
 
 test('Getrackte Zeit erscheint live im Kalender und bleibt danach stehen', async ({ page }) => {
@@ -108,7 +110,7 @@ test('Getrackte Zeit erscheint live im Kalender und bleibt danach stehen', async
   await page.getByRole('button', { name: 'Mathe', exact: true }).click()
   await page.clock.runFor(45 * 60_000)
 
-  await page.getByRole('link', { name: 'Organisation' }).click()
+  await page.getByRole('link', { name: 'Kalender' }).click()
   await page.getByRole('button', { name: 'Woche' }).click()
   const today = page.locator('[data-col="2026-11-18"]')
   const live = today.locator('[data-tracked="live"]')
@@ -123,7 +125,7 @@ test('Getrackte Zeit erscheint live im Kalender und bleibt danach stehen', async
   // Timer stoppen → fester Block mit Endzeit
   await page.getByRole('link', { name: 'Tracker' }).click()
   await page.getByRole('button', { name: 'Stopp' }).click()
-  await page.getByRole('link', { name: 'Organisation' }).click()
+  await page.getByRole('link', { name: 'Kalender' }).click()
   await expect(today.locator('[data-tracked="live"]')).toHaveCount(0)
   await expect(today.locator('[data-tracked="done"]', { hasText: '15:00–16:15' })).toHaveAccessibleName('Getrackt: Mathe 15:00–16:15')
   // frühere Sessions der Woche aus dem Backup sind ebenfalls da
@@ -144,7 +146,7 @@ test('Hover-Karte im Wochenkalender: ↗ öffnet den Task, Klick legt keinen Ein
   await page.clock.runFor(10 * 60_000)
   await card.getByRole('button', { name: 'Blatt 1 stoppen' }).click()
 
-  await page.goto('/#organisation')
+  await page.goto('/#kalender')
   const before = (await storedPlan(page)).length
   await page.getByLabel('Getrackt: Blatt 1 15:00–15:10').hover()
   await page.clock.runFor(200)

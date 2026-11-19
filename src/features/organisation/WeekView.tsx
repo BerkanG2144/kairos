@@ -198,7 +198,15 @@ export function WeekView({ monday, plan, acts, actions, now, tracked, taskTitle 
           {days.map((d) => {
             const k = dayKey(d)
             return (
-              <div key={k} className={styles.ad} data-allday={k}>
+              <div
+                key={k}
+                className={styles.ad}
+                data-allday={k}
+                title="Klicken: Abgabe hinzufügen"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) actions.create(k, 'abgabe')
+                }}
+              >
                 {sortItems(plan[k] ?? [])
                   .filter((it) => !isTimed(it))
                   .map((it) => (

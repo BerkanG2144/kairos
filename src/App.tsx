@@ -5,7 +5,8 @@ import { TimerTitle } from './app/TimerTitle.tsx'
 import { UpdateToast } from './app/UpdateToast.tsx'
 import { useRollover } from './state/useRollover.ts'
 import { HomePage } from './features/home/HomePage.tsx'
-import { OrgPage } from './features/organisation/OrgPage.tsx'
+import { ExamsPage } from './features/exams/ExamsPage.tsx'
+import { CalendarPage } from './features/organisation/CalendarPage.tsx'
 import { PlanPage } from './features/plan/PlanPage.tsx'
 import { StatsPage } from './features/stats/StatsPage.tsx'
 import { GapToast } from './features/tracker/GapToast.tsx'
@@ -21,7 +22,8 @@ export function App({ volatile }: { volatile: boolean }) {
       {route === 'plan' && <PlanPage />}
       {route === 'tracker' && <TrackerPage />}
       {route === 'statistik' && <StatsPage />}
-      {route === 'organisation' && <OrgPage />}
+      {route === 'kalender' && <CalendarPage />}
+      {route === 'organisation' && <ExamsPage />}
       <SaveError volatile={volatile} />
       <GapToast />
       <UpdateToast />

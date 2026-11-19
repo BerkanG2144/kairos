@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { byDay, learned } from './sessions.ts'
+import { blocks, byDay, learned } from './sessions.ts'
 import { emptyState } from './state.ts'
 import type { State } from './types.ts'
 
@@ -77,5 +77,67 @@ describe('byDay – Tages-Splitting', () => {
   it('learned ignoriert Pause und leere Tage', () => {
     expect(learned(undefined)).toBe(0)
     expect(learned({ [PAUSE]: 500 })).toBe(0)
+  })
+})
+
+describe('Blöcke unter 5 min zählen nicht', () => {
+  const T = (hm: string) => at(`2026-11-18T${hm}`)
+
+  it('kurze Session fällt weg, genau 5 min zählt; kurze Pause fällt auch weg', () => {
+    const r = byDay(
+      withSessions([
+        ['a', T('10:00:00'), T('10:04:59')],
+        ['b', T('11:00:00'), T('11:05:00')],
+        [PAUSE, T('11:05:00'), T('11:07:00')],
+        [PAUSE, T('12:00:00'), T('12:10:00')],
+      ]),
+      0,
+    )
+    expect(r).toEqual({ '2026-11-18': { b: 300, [PAUSE]: 600 } })
+  })
+
+  it('kurze Stücke mit ≤ 1 min Lücke ergeben zusammen einen zählenden Block (Lücke selbst zählt nicht)', () => {
+    const r = byDay(
+      withSessions([
+        ['a', T('10:00:00'), T('10:03:00')],
+        ['a', T('10:03:50'), T('10:06:00')],
+      ]),
+      0,
+    )
+    expect(r['2026-11-18']).toEqual({ a: 180 + 130 })
+  })
+
+  it('Fach mit Task und ohne Task sind getrennte Blöcke', () => {
+    const r = byDay(
+      withSessions([
+        ['a', T('10:00:00'), T('10:03:00'), 't1'],
+        ['a', T('10:03:10'), T('10:06:00')],
+      ]),
+      0,
+    )
+    expect(r).toEqual({})
+  })
+
+  it('laufender Timer zählt sofort und verschmilzt mit einer Session kurz davor', () => {
+    const s = withSessions([['a', T('10:00:00'), T('10:02:00')]], { a: 'a', t: T('10:02:30') })
+    expect(byDay(s, T('10:03:30'))['2026-11-18']).toEqual({ a: 120 + 60 })
+    expect(blocks(s, T('10:03:30'))).toMatchObject([{ a: 'a', start: T('10:00:00'), end: T('10:03:30'), live: true }])
+    // nur der laufende Timer (1 min) – zählt trotzdem
+    expect(byDay(withSessions([], { a: 'b', t: T('11:00:00') }), T('11:01:00'))['2026-11-18']).toEqual({ b: 60 })
+  })
+
+  it('Unterbrechung durch ein anderes Fach trennt nicht (je Fach+Task gruppiert)', () => {
+    const bs = blocks(
+      withSessions([
+        ['a', T('10:00:00'), T('10:03:00')],
+        ['b', T('10:03:00'), T('10:03:20')],
+        ['a', T('10:03:30'), T('10:06:00')],
+      ]),
+      0,
+    )
+    expect(bs.map((b) => [b.a, b.end - b.start])).toEqual([
+      ['a', 360],
+      ['b', 20],
+    ])
   })
 })

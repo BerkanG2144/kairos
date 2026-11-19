@@ -19,15 +19,17 @@ test('Import des Legacy-Backups, alle Seiten ohne horizontales Scrollen', async 
 
   await page.getByRole('link', { name: 'Organisation' }).click()
   // migrierte Klausuren aus meta.exams
-  await expect(page.getByRole('region', { name: 'Klausuren' })).toContainText('HM I')
-  await expect(page.getByRole('region', { name: 'Klausuren' })).toContainText('Experimentalphysik')
+  await expect(page.getByRole('button', { name: 'Klausur HM I' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Klausur Experimentalphysik' })).toBeVisible()
   await expectNoHorizontalScroll(page)
+  await page.getByRole('link', { name: 'Kalender' }).click()
   await page.getByRole('button', { name: 'Monat' }).click()
   await expectNoHorizontalScroll(page)
 
   // bleibt nach Neuladen erhalten
+  await page.getByRole('link', { name: 'Organisation' }).click()
   await page.reload()
-  await expect(page.getByRole('region', { name: 'Klausuren' })).toContainText('HM I')
+  await expect(page.getByRole('button', { name: 'Klausur HM I' })).toBeVisible()
 })
 
 test('Ungültige Datei wird abgelehnt, Daten bleiben', async ({ page }) => {

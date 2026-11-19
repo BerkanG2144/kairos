@@ -79,10 +79,11 @@ test('Tasks anlegen, Timer am Task, verschieben, abhaken, bleibt nach Neuladen',
   await dragTo(page, today.locator('[data-task]', { hasText: 'Altklausur' }), yb.x + 100, yb.y + 140)
   expect(await titles(today)).toEqual(['Blatt 3', 'Altklausur'])
 
-  // abhaken stoppt den Timer, Zeit bleibt am Task
+  // abhaken stoppt den Timer, Zeit bleibt am Task (≥ 5 min – Kürzeres zählt nicht)
+  await page.clock.runFor(5 * 60_000)
   await blatt.getByRole('checkbox', { name: 'Blatt 3 erledigt' }).click()
   await expect(blatt.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
-  await expect(blatt.getByTestId('task-time')).toHaveText('1m')
+  await expect(blatt.getByTestId('task-time')).toHaveText('6m')
   await expect(page).toHaveTitle('Kairos')
 
   await page.reload()
@@ -129,7 +130,7 @@ test('Navigationsleiste steht auf allen Seiten an derselben Stelle', async ({ pa
   await freezeAt(page)
   await page.goto('/#plan')
   const pos: number[] = []
-  for (const name of ['Home', 'Plan', 'Tracker', 'Statistik', 'Organisation']) {
+  for (const name of ['Home', 'Plan', 'Tracker', 'Statistik', 'Kalender', 'Organisation']) {
     await page.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('link', { name, exact: true })).toHaveAttribute('aria-current', 'page')
     pos.push((await page.getByRole('link', { name: 'Home' }).boundingBox())!.x)
