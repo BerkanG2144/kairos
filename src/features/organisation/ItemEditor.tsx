@@ -14,7 +14,7 @@ import {
   TITLE_PLACEHOLDER,
   type EditorForm,
 } from '../../domain/editor.ts'
-import { newId, removeItem, TYPES } from '../../domain/plan.ts'
+import { findItem, newId, removeItem, TYPES } from '../../domain/plan.ts'
 import type { PlanItem, PlanType } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
 import styles from './ItemEditor.module.css'
@@ -36,7 +36,8 @@ export function ItemEditor({ it, isNew, onClose }: Props) {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
-    const r = itemFromForm(it, f, state.meta.acts)
+    // aktueller Stand statt Momentaufnahme beim Öffnen – sonst gingen zwischenzeitlich gespeicherte Notizen verloren
+    const r = itemFromForm(findItem(state, it.id)?.it ?? it, f, state.meta.acts)
     if (!r.ok) {
       if (r.error === 'title') titleRef.current?.focus()
       return

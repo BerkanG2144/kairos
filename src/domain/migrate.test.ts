@@ -61,13 +61,23 @@ describe('Migration v2 → v3 (Wochenplan)', () => {
       meta: { acts: [{ id: 'a', name: 'Mathe', c: '#fff' }], run: { a: 'a', t: 5 }, last: 'a', u: 1 },
       months: { '2026-11': { s: [['a', 1, 2]], p: [{ id: 'p', type: 'termin', title: 'x', d: '2026-11-18' }], u: 1 } },
     }
-    expect(SCHEMA_VERSION).toBe(3)
     expect(migrate(s, 2, 99)).toBe(s)
   })
 
-  it('v1 → v3 in einem Schritt', () => {
+  it('v1 → aktuell in einem Schritt', () => {
     const out = migrate(withExams([{ id: 'e1', name: 'Ana', d: '2027-02-10' }]), 1, 7)
     expect(out.meta.exams).toBeUndefined()
     expect(allPlan(out).map((i) => i.title)).toEqual(['Ana'])
+  })
+})
+
+describe('Migration v3 → v4 (Notizen)', () => {
+  it('lässt v3-Daten unverändert (nur neue optionale Felder)', () => {
+    const s: State = {
+      meta: { acts: [], run: null, last: null, u: 1 },
+      months: { '2026-12': { s: [], p: [{ id: 'k', type: 'klausur', title: 'Ana', d: '2026-12-10' }], k: [], u: 1 } },
+    }
+    expect(SCHEMA_VERSION).toBe(4)
+    expect(migrate(s, 3, 99)).toBe(s)
   })
 })

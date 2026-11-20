@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { freezeAt, importBackup } from './helpers.ts'
 
-test('Organisation: Klausur anlegen → Karte mit Countdown und Fortschritt; bearbeiten, löschen', async ({ page }) => {
+test('Organisation: Klausur anlegen → Karte mit Countdown und Fortschritt; öffnen, löschen', async ({ page }) => {
   await freezeAt(page) // Mi 18.11.2026 15:00
   await page.goto('/#organisation')
   await importBackup(page)
@@ -36,13 +36,16 @@ test('Organisation: Klausur anlegen → Karte mit Countdown und Fortschritt; bea
   await page.getByRole('button', { name: 'Monat' }).click()
   await expect(page.getByRole('region', { name: 'Kalender' })).toContainText('Analysis I')
 
-  // Karte anklicken → bearbeiten → löschen
+  // Karte anklicken → Notizseite → löschen
   await page.getByRole('link', { name: 'Organisation' }).click()
   await card.click()
-  const dlg = page.getByRole('dialog', { name: 'Eintrag bearbeiten' })
+  const dlg = page.getByRole('dialog', { name: 'Notizen: Analysis I' })
   await expect(dlg.getByLabel('Titel')).toHaveValue('Analysis I')
+  await expect(dlg.getByLabel('Fach')).toHaveValue(/.+/)
   await dlg.getByRole('button', { name: 'Löschen' }).click()
-  await dlg.getByRole('button', { name: /Wirklich löschen|Löschen/ }).last().click()
+  await expect(dlg).toContainText('Klausur samt Notizen löschen?')
+  await dlg.getByRole('button', { name: 'Löschen' }).click()
+  await expect(dlg).toHaveCount(0)
   await expect(card).toHaveCount(0)
 })
 

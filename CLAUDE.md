@@ -40,7 +40,9 @@ Fach-Farben (Reihenfolge der Vergabe):
 - Hintergrund: zwei sehr schwache radiale Verläufe (gelb oben rechts, lila unten links).
 - Labels: 11 px, Großbuchstaben, letter-spacing .24em, `--mute`.
 - Tabs: Home · Plan · Tracker · Statistik · Kalender (`#kalender`, Woche/Monat) · Organisation
-  (`#organisation`, Klausuren als Fortschrittskarten).
+  (`#organisation`, Klausuren als Fortschrittskarten; Klick öffnet die Notizseite im Notion-Stil:
+  Icon, Titel, Eigenschaften Fach/Datum/Uhrzeit, Editor mit Toolbar und Markdown-Kürzeln,
+  `src/features/notes/`).
 - Tracker: nur der Timer, mittig. Statistik: max-width ~1120 px. Home, Plan, Kalender, Organisation:
   breiter (~1640 px). Berkan legt Wert darauf, dass es nicht gequetscht wirkt.
 - **Nur Desktop/Laptop.** Handy wird nicht unterstützt (Berkans Entscheidung): keine neuen mobilen
@@ -73,6 +75,8 @@ type PlanItem = {
   e?: 'HH:MM'             // Ende (nur block/termin)
   done?: true             // nur abgabe
   g?: string              // Serien-ID (wöchentliche Wiederholung)
+  n?: string              // Notizen (v4): HTML, immer durch sanitizeNotes bereinigt (nie roh in innerHTML!)
+  ic?: string             // Icon der Notizseite (v4), Schlüssel aus features/notes/icons.tsx
 }
 ```
 
