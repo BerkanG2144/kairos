@@ -2,17 +2,16 @@
 import { LEARN_DAY_MIN_SEC, PAUSE } from './constants.ts'
 import { learned } from './sessions.ts'
 import { toItems, type Item } from './summary.ts'
-import { addDays, dayKey } from './time.ts'
+import { dayKey, mondayOf } from './time.ts'
 import type { Act, ByDay, DayTotals } from './types.ts'
 
-/** 'day' = Tagesbilanz eines einzelnen Tages (Standard: heute) */
-export type Range = 'day' | '7' | '30' | '365' | 'all'
+/** Kalender-Zeiträume bis einschließlich heute. 'day' = Tagesbilanz eines einzelnen Tages (Standard: heute) */
+export type Range = 'day' | 'week' | 'month' | 'year'
 export const RANGES: { r: Range; label: string }[] = [
   { r: 'day', label: 'Heute' },
-  { r: '7', label: '7 Tage' },
-  { r: '30', label: '30 Tage' },
-  { r: '365', label: 'Jahr' },
-  { r: 'all', label: 'Gesamt' },
+  { r: 'week', label: 'Diese Woche' },
+  { r: 'month', label: 'Dieser Monat' },
+  { r: 'year', label: 'Dieses Jahr' },
 ]
 export const isRange = (x: unknown): x is Range => RANGES.some((r) => r.r === x)
 
@@ -21,16 +20,23 @@ export type RangeStats = { items: ActStat[]; total: number; studyDays: number; a
 
 const isLearnDay = (m: DayTotals | undefined) => learned(m) >= LEARN_DAY_MIN_SEC
 
-/** Auswertung für die letzten n Tage inkl. heute (bzw. nur heute / alles bis heute). */
+/** Erster Tag des Zeitraums: heute, Montag dieser Woche, 1. des Monats, 1. Januar. */
+export function rangeStart(range: Range, today: Date): Date {
+  if (range === 'week') return mondayOf(today)
+  if (range === 'month') return new Date(today.getFullYear(), today.getMonth(), 1)
+  if (range === 'year') return new Date(today.getFullYear(), 0, 1)
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate())
+}
+
+/** Auswertung vom Beginn des Zeitraums bis einschließlich heute. */
 export function rangeStats(byDay: ByDay, range: Range, today: Date, acts: Act[]): RangeStats {
   const tk = dayKey(today)
-  const n = range === 'day' ? 1 : Number(range)
-  const cutoff = range === 'all' ? '' : dayKey(addDays(today, -(n - 1)))
+  const cutoff = dayKey(rangeStart(range, today))
   const per: DayTotals = {}
   const perDays: Record<string, number> = {}
   let studyDays = 0
   for (const [k, m] of Object.entries(byDay)) {
-    if (k > tk || (cutoff && k < cutoff)) continue
+    if (k > tk || k < cutoff) continue
     if (isLearnDay(m)) studyDays++
     for (const [a, v] of Object.entries(m)) {
       if (a === PAUSE) continue

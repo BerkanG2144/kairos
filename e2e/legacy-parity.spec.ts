@@ -23,7 +23,9 @@ async function legacySnapshot(page: Page): Promise<Snapshot> {
   await page.click('#impYes')
   await page.evaluate(() => (location.hash = '#statistik'))
   const kpis: Record<string, string[]> = {}
-  for (const r of ['7', '30', '365', 'all']) {
+  // Die App zählt Kalender-Zeiträume (Woche/Monat/Jahr), die Legacy-Datei rollierende Tage.
+  // Vergleichbar ist nur das Jahr: Das Fixture liegt komplett in 2026, also = letzte 365 Tage.
+  for (const r of ['365']) {
     await page.click(`#range button[data-r="${r}"]`)
     kpis[r] = await page.evaluate(() => ['#sTotal', '#sDays', '#sAvg'].map((s) => document.querySelector(s)!.textContent!))
   }
@@ -41,7 +43,7 @@ async function appSnapshot(page: Page): Promise<Snapshot> {
   await page.goto('/#statistik')
   await importBackup(page)
   const kpis: Record<string, string[]> = {}
-  for (const [r, label] of [['7', '7 Tage'], ['30', '30 Tage'], ['365', 'Jahr'], ['all', 'Gesamt']] as const) {
+  for (const [r, label] of [['365', 'Dieses Jahr']] as const) {
     await page.getByRole('button', { name: label }).click()
     kpis[r] = (await Promise.all(['kpi-total', 'kpi-days', 'kpi-avg'].map((id) => page.getByTestId(id).textContent()))) as string[]
   }
