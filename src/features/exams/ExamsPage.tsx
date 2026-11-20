@@ -1,14 +1,16 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import { cx, vars } from '../../components/cx.ts'
 import ui from '../../components/ui.module.css'
 import { examRows, hoursDe, pastExamRows, progress, type ExamRow } from '../../domain/exams.ts'
+import { notesSummary } from '../../domain/notes.ts'
 import { allPlan, newId, saveItem } from '../../domain/plan.ts'
 import { byDay as sessionsByDay } from '../../domain/sessions.ts'
 import { dayKey } from '../../domain/time.ts'
 import type { Act, ByDay } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
 import { useNow } from '../../state/useNow.ts'
-import { ItemEditor } from '../organisation/ItemEditor.tsx'
+import { ExamNotes } from '../notes/ExamNotes.tsx'
+import { NoteIcon } from '../notes/icons.tsx'
 import styles from './Exams.module.css'
 
 /** Verlauf der kumulierten Lernzeit (letzte 28 Tage) als kleine Linie mit Endpunkt. */
@@ -31,6 +33,7 @@ function Spark({ series, color }: { series: number[]; color: string }) {
 function ExamCard({ r, act, byDay, today, past, onOpen }: { r: ExamRow; act?: Act; byDay: ByDay; today: Date; past?: boolean; onOpen: () => void }) {
   const color = act?.c ?? 'var(--mute)'
   const p = act ? progress(byDay, act.id, today) : null
+  const notes = notesSummary(r.it.n)
   return (
     <button
       type="button"
@@ -42,13 +45,25 @@ function ExamCard({ r, act, byDay, today, past, onOpen }: { r: ExamRow; act?: Ac
       data-upcoming={past ? undefined : ''}
     >
       <div className={styles.top}>
-        <span className={styles.mono}>{(act?.name ?? r.it.title).slice(0, 1).toUpperCase()}</span>
+        <span className={styles.mono}>
+          <NoteIcon ic={r.it.ic} letter={(act?.name ?? r.it.title).slice(0, 1).toUpperCase()} size={19} />
+        </span>
         <span className={styles.titles}>
           <b>{r.it.title}</b>
           <small>
             {act ? `${act.name} · ` : ''}
             {r.date}
           </small>
+          {(notes.text || notes.todo > 0) && (
+            <span className={styles.notes} data-testid="exam-notes">
+              {notes.todo > 0 && (
+                <span className={cx(styles.todo, notes.done === notes.todo && styles.allDone)}>
+                  ☑ {notes.done}/{notes.todo}
+                </span>
+              )}
+              <span className={styles.preview}>{notes.text}</span>
+            </span>
+          )}
         </span>
         <span className={cx(styles.count, r.tone === 'urgent' && styles.urgent, r.tone === 'soon' && styles.soon)} data-testid="exam-count">
           {past ? 'vorbei' : r.word ?? (
@@ -73,13 +88,16 @@ function ExamCard({ r, act, byDay, today, past, onOpen }: { r: ExamRow; act?: Ac
           </div>
         </div>
       ) : (
-        <div className={styles.noact}>Kein Fach verknüpft – zum Zuordnen anklicken.</div>
+        <div className={styles.noact}>Kein Fach verknüpft – zum Zuordnen öffnen.</div>
       )}
     </button>
   )
 }
 
-/** Organisation: Klausuren anlegen; je Klausur eine Karte mit Countdown und Lern-Fortschritt im Fach. */
+/**
+ * Organisation: Klausuren anlegen; je Klausur eine Karte mit Countdown und Lern-Fortschritt im Fach.
+ * Klick auf die Karte öffnet die Notizseite der Klausur (Notizen, Icon, Fach, Datum, Löschen).
+ */
 export function ExamsPage() {
   const state = useAppState()
   const dispatch = useDispatch()
@@ -91,8 +109,8 @@ export function ExamsPage() {
   const past = pastExamRows(all, today)
   const acts = state.meta.acts.filter((a) => !a.del)
   const actOf = (id?: string) => state.meta.acts.find((a) => a.id === id)
-  const [editing, setEditing] = useState<string | null>(null)
-  const editItem = editing ? all.find((it) => it.id === editing) : undefined
+  const [open, setOpen] = useState<string | null>(null)
+  const close = useCallback(() => setOpen(null), [])
 
   const [title, setTitle] = useState('')
   const [act, setAct] = useState('')
@@ -139,7 +157,7 @@ export function ExamsPage() {
       {upcoming.length ? (
         <div className={styles.grid}>
           {upcoming.map((r) => (
-            <ExamCard key={r.it.id} r={r} act={actOf(r.it.act)} byDay={byDay} today={today} onOpen={() => setEditing(r.it.id)} />
+            <ExamCard key={r.it.id} r={r} act={actOf(r.it.act)} byDay={byDay} today={today} onOpen={() => setOpen(r.it.id)} />
           ))}
         </div>
       ) : (
@@ -153,13 +171,13 @@ export function ExamsPage() {
           </div>
           <div className={styles.grid}>
             {past.map((r) => (
-              <ExamCard key={r.it.id} r={r} act={actOf(r.it.act)} byDay={byDay} today={today} past onOpen={() => setEditing(r.it.id)} />
+              <ExamCard key={r.it.id} r={r} act={actOf(r.it.act)} byDay={byDay} today={today} past onOpen={() => setOpen(r.it.id)} />
             ))}
           </div>
         </>
       )}
 
-      {editItem && <ItemEditor key={editItem.id} it={editItem} isNew={false} onClose={() => setEditing(null)} />}
+      {open && <ExamNotes key={open} id={open} today={today} onClose={close} />}
     </main>
   )
 }

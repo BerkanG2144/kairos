@@ -39,6 +39,10 @@ export type PlanItem = {
   done?: true
   /** Serien-ID (wöchentliche Wiederholung) */
   g?: string
+  /** Notizen (v4) – bereinigtes HTML, siehe features/notes/sanitize.ts */
+  n?: string
+  /** Icon der Notizseite (v4), Schlüssel aus features/notes/icons.tsx */
+  ic?: string
 }
 
 /** Aufgabe im Wochenplan (v3). Liegt im Monatsdokument ihres Tages. */

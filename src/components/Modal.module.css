@@ -23,6 +23,13 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
 }
 
+.wide {
+  max-width: 940px;
+  height: min(88vh, 1000px);
+  padding: 0;
+  overscroll-behavior: contain;
+}
+
 @media (max-width: 880px) {
   .modal {
     align-items: flex-end;
