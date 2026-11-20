@@ -15,7 +15,7 @@ import styles from './Stats.module.css'
 export function StatsPage() {
   const state = useAppState()
   const now = useNow(!!state.meta.run, 20_000)
-  const [range, setRange] = usePref('lernzeit.range', '30', isRange)
+  const [range, setRange] = usePref('lernzeit.range', 'week', isRange)
 
   const byDay = useMemo(() => computeByDay(state, now), [state, now])
   const today = new Date(now * 1000)

@@ -115,7 +115,7 @@ test('Tracker: nur Timer, mittig; Statistik ohne Serie und Wochen-Diagramm', asy
   const vw = page.viewportSize()!.width
   expect(Math.abs(t.x + t.width / 2 - vw / 2)).toBeLessThan(20)
   await page.getByRole('link', { name: 'Statistik' }).click()
-  await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: '7 Tage' }).click()
+  await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: 'Diese Woche' }).click()
   await expect(page.getByTestId('kpi-total')).toBeVisible()
   await expect(page.getByText(/Serie|Rekord/)).toHaveCount(0)
   await expect(page.getByText('Letzte 12 Wochen')).toHaveCount(0)
@@ -137,7 +137,7 @@ test('Statistik: „Heute“ zeigt die Tagesbilanz', async ({ page }) => {
   await page.getByRole('link', { name: 'Tracker' }).click()
   await page.getByRole('link', { name: 'Statistik' }).click()
   await expect(page.getByRole('region', { name: 'Tagesbilanz' })).toBeVisible()
-  await seg.getByRole('button', { name: '7 Tage' }).click()
+  await seg.getByRole('button', { name: 'Diese Woche' }).click()
   await expect(page.getByTestId('kpi-total')).toBeVisible()
 })
 
@@ -167,7 +167,7 @@ test('Unter 5 min: nirgends sichtbar (Home, Plan, Statistik, Kalender, Task); ab
     await page.getByRole('link', { name: 'Plan', exact: true }).click()
     await expect(page.getByTestId('plan-week')).toHaveText(expected.home.replace('heute', 'diese Woche'))
     await page.getByRole('link', { name: 'Statistik' }).click()
-    await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: '7 Tage' }).click()
+    await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: 'Diese Woche' }).click()
     await expect(page.getByTestId('kpi-total')).toHaveText(expected.stats)
     await page.getByRole('link', { name: 'Kalender' }).click()
     await page.getByRole('button', { name: 'Woche' }).click()

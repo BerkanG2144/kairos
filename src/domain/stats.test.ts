@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAUSE } from './constants.ts'
-import { daysLabel, rangeStats } from './stats.ts'
+import { daysLabel, isRange, rangeStart, rangeStats } from './stats.ts'
 import { dayKey } from './time.ts'
 import type { Act, ByDay } from './types.ts'
 
@@ -8,23 +8,35 @@ const acts: Act[] = [
   { id: 'a', name: 'Mathe', c: '#111' },
   { id: 'b', name: 'Physik', c: '#222' },
 ]
+// Mittwoch, 18.11.2026 → Woche ab Mo 16.11., Monat ab 1.11., Jahr ab 1.1.
 const today = new Date(2026, 10, 18, 15, 0)
+const d = (m: number, day: number) => dayKey(new Date(2026, m, day))
 
-/** Lerntage relativ zu heute: { -1: {a: 3600} } */
-const days = (spec: Record<number, Record<string, number>>): ByDay =>
-  Object.fromEntries(Object.entries(spec).map(([off, m]) => [dayKey(new Date(2026, 10, 18 + Number(off))), m]))
+describe('rangeStart', () => {
+  it('Kalendergrenzen statt rollierender Tage', () => {
+    expect(dayKey(rangeStart('day', today))).toBe('2026-11-18')
+    expect(dayKey(rangeStart('week', today))).toBe('2026-11-16')
+    expect(dayKey(rangeStart('month', today))).toBe('2026-11-01')
+    expect(dayKey(rangeStart('year', today))).toBe('2026-01-01')
+  })
+  it('Woche: Sonntag gehört zur Woche ab dem Montag davor', () => {
+    expect(dayKey(rangeStart('week', new Date(2026, 10, 22, 23, 0)))).toBe('2026-11-16')
+    expect(dayKey(rangeStart('week', new Date(2026, 10, 23, 0, 30)))).toBe('2026-11-23')
+  })
+})
 
 describe('rangeStats', () => {
-  const byDay = days({
-    1: { a: 9999 }, // Zukunft – ignoriert
-    0: { a: 1800, b: 30, [PAUSE]: 600 },
-    '-6': { b: 3600 },
-    '-7': { a: 7200 }, // nur in 30 Tagen
-    '-40': { a: 100 }, // nur in Jahr/Gesamt
-  })
+  const byDay: ByDay = {
+    [d(10, 19)]: { a: 9999 }, // Zukunft – ignoriert
+    [d(10, 18)]: { a: 1800, b: 30, [PAUSE]: 600 }, // heute
+    [d(10, 16)]: { b: 3600 }, // Montag dieser Woche
+    [d(10, 15)]: { a: 7200 }, // Sonntag letzte Woche → nur Monat/Jahr
+    [d(9, 31)]: { a: 100 }, // Oktober → nur Jahr
+    [dayKey(new Date(2025, 11, 31))]: { b: 5000 }, // Vorjahr → nirgends
+  }
 
-  it('7 Tage inkl. heute', () => {
-    expect(rangeStats(byDay, '7', today, acts)).toEqual({
+  it('Diese Woche: ab Montag inkl. heute', () => {
+    expect(rangeStats(byDay, 'week', today, acts)).toEqual({
       items: [
         { id: 'b', name: 'Physik', c: '#222', v: 3630, days: 1 },
         { id: 'a', name: 'Mathe', c: '#111', v: 1800, days: 1 },
@@ -35,18 +47,19 @@ describe('rangeStats', () => {
     })
   })
   it('Heute: nur der heutige Tag', () => {
-    const r = rangeStats(byDay, 'day', today, acts)
-    expect(r.total).toBe(Object.entries(byDay[dayKey(today)] ?? {}).filter(([a]) => a !== PAUSE).reduce((s, [, v]) => s + v, 0))
-    expect(r.studyDays).toBeLessThanOrEqual(1)
+    expect(rangeStats(byDay, 'day', today, acts)).toMatchObject({ total: 1830, studyDays: 1 })
   })
-
-  it('30 Tage / Jahr / Gesamt', () => {
-    expect(rangeStats(byDay, '30', today, acts)).toMatchObject({ total: 12630, studyDays: 3 })
-    expect(rangeStats(byDay, '365', today, acts)).toMatchObject({ total: 12730, studyDays: 4 })
-    expect(rangeStats(byDay, 'all', today, acts).items[0]).toMatchObject({ id: 'a', v: 9100, days: 3 })
+  it('Dieser Monat / Dieses Jahr', () => {
+    expect(rangeStats(byDay, 'month', today, acts)).toMatchObject({ total: 12630, studyDays: 3 })
+    expect(rangeStats(byDay, 'year', today, acts)).toMatchObject({ total: 12730, studyDays: 4 })
+    expect(rangeStats(byDay, 'year', today, acts).items[0]).toMatchObject({ id: 'a', v: 9100, days: 3 })
   })
   it('leer', () => {
-    expect(rangeStats({}, '30', today, acts)).toEqual({ items: [], total: 0, studyDays: 0, avg: 0 })
+    expect(rangeStats({}, 'month', today, acts)).toEqual({ items: [], total: 0, studyDays: 0, avg: 0 })
+  })
+  it('alte gespeicherte Auswahl (7/30/365/Gesamt) ist ungültig → Standard', () => {
+    for (const old of ['7', '30', '365', 'all']) expect(isRange(old)).toBe(false)
+    expect(isRange('week')).toBe(true)
   })
 })
 

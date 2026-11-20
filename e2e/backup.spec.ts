@@ -55,7 +55,7 @@ test('Export → Import ergibt denselben Stand', async ({ page }) => {
   expect('exams' in json.data.meta).toBe(false)
 
   await page.getByRole('link', { name: 'Statistik' }).click()
-  await page.getByRole('button', { name: 'Gesamt' }).click()
+  await page.getByRole('button', { name: 'Dieses Jahr' }).click()
   const before = await page.getByTestId('kpi-total').textContent()
 
   await page.getByTestId('import-file').setInputFiles({ name: 'b.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(json)) })
