@@ -112,8 +112,10 @@ test('Klausur-Notizen: Titel, Datum und Esc ohne Datenverlust; leere Notizen wer
   await page.keyboard.press('Escape')
   await expect(card).toContainText('3. Mär 2027')
   await expect(card.getByTestId('exam-notes')).toContainText('Optik wiederholen')
-  const stored = (await storedPlan(page)).find((p) => p.title === 'Experimentalphysik I') as { n?: string; d: string }
-  expect(stored).toMatchObject({ d: '2027-03-03', n: '<p>Optik wiederholen</p>' })
+  // IndexedDB wird asynchron geschrieben – warten, statt sofort zu lesen
+  await expect
+    .poll(async () => (await storedPlan(page)).find((p) => p.title === 'Experimentalphysik I'))
+    .toMatchObject({ d: '2027-03-03', n: '<p>Optik wiederholen</p>' })
 })
 
 test('Klausur-Notizen: HTML aus einem importierten Backup wird bereinigt', async ({ page }, info) => {
