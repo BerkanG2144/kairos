@@ -26,7 +26,7 @@ export const TITLE_PLACEHOLDER: Record<PlanType, string> = {
   block: 'z. B. LA2 Blatt 5 rechnen',
   abgabe: 'z. B. Blatt 5',
   klausur: 'z. B. Lineare Algebra 2',
-  termin: 'z. B. Tutorium',
+  termin: 'z. B. Gym',
 }
 
 /** Beschriftung des Zeitfelds je Typ. */

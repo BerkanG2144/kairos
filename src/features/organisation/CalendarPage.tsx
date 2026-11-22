@@ -93,7 +93,7 @@ export function CalendarPage() {
           )}
         </Nav>
         <button type="button" className={cx(ui.pill, styles.addp)} onClick={onAdd}>
-          + Eintrag
+          + Abgabe
         </button>
       </div>
       <div className={styles.orggrid}>

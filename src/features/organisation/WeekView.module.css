@@ -159,9 +159,8 @@
 }
 
 .ter {
-  background: transparent;
-  color: var(--text);
-  border: 1.5px dashed var(--c);
+  /* „Sonstiges“: immer grau gefüllt, unabhängig vom Fach */
+  background: color-mix(in srgb, #a4a7b0 82%, #0c0d11);
 }
 
 /* Nur Anzeige (Home) */

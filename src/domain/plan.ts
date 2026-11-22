@@ -58,7 +58,7 @@ export const TYPES: Record<PlanType, { label: string; c: string }> = {
   block: { label: 'Block', c: '#a8c8ec' },
   abgabe: { label: 'Abgabe', c: '#f6c6a0' },
   klausur: { label: 'Klausur', c: '#f2a9bd' },
-  termin: { label: 'Termin', c: '#b9b6c9' },
+  termin: { label: 'Sonstiges', c: '#a4a7b0' },
 }
 
 /** Block/Termin mit Start und Ende → im Zeitraster; alles andere in der Zeile „fällig“. */
