@@ -5,14 +5,16 @@
  * Version 2 = exams → Plan-Items vom Typ 'klausur'.
  * Version 3 = Wochenplan: Tasks (months[m].k), optional Task-ID an run (k), Sessions ([a,s,e,k]) und meta.lk.
  * Version 4 = Notizen an Plan-Items (n, HTML) und Icon der Notizseite (ic).
+ * Version 5 = neue Fach-Palette: Fächer mit alter Palettenfarbe bekommen die neue Farbe an gleicher Stelle.
  *
  * Regeln: Jede Schemaänderung bekommt eine neue Version + Migration + Test.
  * Migrationen müssen idempotent sein und dürfen keine Daten verlieren.
  */
+import { COLORS, OLD_COLORS } from './constants.ts'
 import { findItem, saveItem } from './plan.ts'
 import type { PlanItem, State } from './types.ts'
 
-export const SCHEMA_VERSION = 4
+export const SCHEMA_VERSION = 5
 
 type Migration = { to: number; up: (s: State, nowMs: number) => State }
 
@@ -39,10 +41,23 @@ export const migrateTasks = (s: State): State => s
 /** v3 → v4: Notizen (n) und Icon (ic) an Plan-Items – nur neue, optionale Felder. */
 export const migrateNotes = (s: State): State => s
 
+/** v4 → v5: alte Palettenfarben → neue Farbe an gleicher Stelle; eigene Farben bleiben. */
+export function migrateColors(s: State, nowMs: number): State {
+  let changed = false
+  const acts = s.meta.acts.map((a) => {
+    const i = OLD_COLORS.findIndex((c) => c === a.c.toLowerCase())
+    if (i < 0) return a
+    changed = true
+    return { ...a, c: COLORS[i]! }
+  })
+  return changed ? { ...s, meta: { ...s.meta, acts, u: nowMs } } : s
+}
+
 const MIGRATIONS: Migration[] = [
   { to: 2, up: migrateExams },
   { to: 3, up: migrateTasks },
   { to: 4, up: migrateNotes },
+  { to: 5, up: migrateColors },
 ]
 
 /** Bringt einen (normalisierten) State von Version `from` auf SCHEMA_VERSION. */

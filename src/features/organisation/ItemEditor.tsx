@@ -19,8 +19,9 @@ import type { PlanItem, PlanType } from '../../domain/types.ts'
 import { useAppState, useDispatch } from '../../state/StoreProvider.tsx'
 import styles from './ItemEditor.module.css'
 
-// Abgaben entstehen nur über „+ Abgabe“ bzw. die Zeile „fällig“ – dort ohne Typ-Auswahl.
-const TYPE_OPTIONS = (Object.keys(TYPES) as PlanType[]).filter((t) => t !== 'abgabe').map((t) => ({ value: t, label: TYPES[t].label }))
+// Typ-Auswahl nur Block/Sonstiges. Abgaben entstehen über „+ Abgabe“ bzw. die Zeile „fällig“,
+// Klausuren über Organisation – deren Editor zeigt keine Typ-Auswahl.
+const TYPE_OPTIONS = (['block', 'termin'] as const).map((t) => ({ value: t, label: TYPES[t].label }))
 
 type Props = { it: PlanItem; isNew: boolean; onClose: () => void }
 
@@ -51,8 +52,8 @@ export function ItemEditor({ it, isNew, onClose }: Props) {
   return (
     <Modal onClose={onClose} label={isAbgabe ? (isNew ? 'Neue Abgabe' : 'Abgabe bearbeiten') : isNew ? 'Neuer Eintrag' : 'Eintrag bearbeiten'}>
       <form className={styles.form} autoComplete="off" onSubmit={onSubmit}>
-        {!isAbgabe && (
-          <Seg label="Typ" className={styles.seg} options={TYPE_OPTIONS} value={f.type} onChange={(t) => setF((x) => switchType(x, t))} />
+        {isTimedType(f.type) && (
+          <Seg label="Typ" className={styles.seg} options={TYPE_OPTIONS} value={f.type} onChange={(t: PlanType) => setF((x) => switchType(x, t))} />
         )}
         <input
           ref={titleRef}

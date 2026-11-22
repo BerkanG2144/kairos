@@ -1,3 +1,4 @@
+import { COLORS, OLD_COLORS } from './constants.ts'
 import { SCHEMA_VERSION } from './migrate.ts'
 import { describe, expect, it } from 'vitest'
 import { importSummary, makeBackup, parseBackup } from './backup.ts'
@@ -45,7 +46,8 @@ describe('parseBackup', () => {
     expect('exams' in state.meta).toBe(false)
     expect(state.months['2027-02']!.p![0]).toMatchObject({ id: 'e1', type: 'klausur', title: 'HM I', t: '08:00' })
     // alles andere unverändert
-    expect(state.meta.acts).toEqual(legacy.meta.acts)
+    // Fächer bleiben, alte Palettenfarben werden auf die neue Palette gehoben (v5)
+    expect(state.meta.acts).toEqual(legacy.meta.acts.map((a) => ({ ...a, c: COLORS[OLD_COLORS.indexOf(a.c as (typeof OLD_COLORS)[number])] })))
     expect(state.meta.run).toEqual(legacy.meta.run)
     expect(state.months['2026-10']).toEqual(legacy.months['2026-10'])
   })

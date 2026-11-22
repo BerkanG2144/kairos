@@ -160,7 +160,7 @@
 
 .ter {
   /* „Sonstiges“: immer grau gefüllt, unabhängig vom Fach */
-  background: color-mix(in srgb, #a4a7b0 82%, #0c0d11);
+  background: color-mix(in srgb, #8a8a8c 82%, #0c0d11);
 }
 
 /* Nur Anzeige (Home) */

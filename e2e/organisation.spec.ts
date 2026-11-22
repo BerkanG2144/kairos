@@ -63,6 +63,7 @@ test.describe('Kalender (Maus)', () => {
     await page.mouse.click(p.x, p.y)
     const dlg = page.getByRole('dialog')
     await expect(dlg.locator('input[type=time]').first()).toHaveValue('10:15')
+    await expect(dlg.getByRole('group', { name: 'Typ' }).getByRole('button')).toHaveText(['Block', 'Sonstiges'])
     await dlg.getByRole('button', { name: 'Sonstiges' }).click()
     await dlg.getByLabel('Titel').fill('Tutorium')
     await dlg.getByRole('checkbox').check()

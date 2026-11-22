@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { migrate, migrateExams, SCHEMA_VERSION } from './migrate.ts'
+import { COLORS, OLD_COLORS } from './constants.ts'
+import { migrate, migrateColors, migrateExams, SCHEMA_VERSION } from './migrate.ts'
 import { allPlan } from './plan.ts'
 import { emptyState } from './state.ts'
 import type { State } from './types.ts'
@@ -77,7 +78,39 @@ describe('Migration v3 → v4 (Notizen)', () => {
       meta: { acts: [], run: null, last: null, u: 1 },
       months: { '2026-12': { s: [], p: [{ id: 'k', type: 'klausur', title: 'Ana', d: '2026-12-10' }], k: [], u: 1 } },
     }
-    expect(SCHEMA_VERSION).toBe(4)
     expect(migrate(s, 3, 99)).toBe(s)
+  })
+})
+
+describe('Migration v4 → v5 (Fach-Farben)', () => {
+  it('ersetzt alte Palettenfarben positionsgleich, eigene Farben bleiben, Rest unverändert', () => {
+    const s: State = {
+      meta: {
+        acts: [
+          { id: 'r', name: 'Robot', c: OLD_COLORS[3] },
+          { id: 'l', name: 'LA 2', c: OLD_COLORS[5].toUpperCase(), del: true },
+          { id: 'x', name: 'Eigen', c: '#123456' },
+        ],
+        run: null,
+        last: 'r',
+        u: 1,
+      },
+      months: { '2026-11': { s: [['r', 1, 400]], u: 1 } },
+    }
+    const out = migrate(s, 4, 99)
+    expect(SCHEMA_VERSION).toBe(5)
+    expect(out.meta.acts).toEqual([
+      { id: 'r', name: 'Robot', c: COLORS[3] },
+      { id: 'l', name: 'LA 2', c: COLORS[5], del: true },
+      { id: 'x', name: 'Eigen', c: '#123456' },
+    ])
+    expect(out.meta.u).toBe(99)
+    expect(out.months).toBe(s.months)
+  })
+
+  it('idempotent und ohne alte Farben unverändert', () => {
+    const s: State = { meta: { acts: [{ id: 'a', name: 'A', c: COLORS[0] }], run: null, last: null, u: 1 }, months: {} }
+    expect(migrateColors(s, 5)).toBe(s)
+    expect(migrateColors(migrateColors({ ...s, meta: { ...s.meta, acts: [{ id: 'a', name: 'A', c: OLD_COLORS[0] }] } }, 5), 6).meta.acts[0]!.c).toBe(COLORS[0])
   })
 })

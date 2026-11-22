@@ -31,8 +31,8 @@ Minimalistisch, dunkel („Batman“), Pastell-Akzente. Kein Schnickschnack – 
 --text:#e9e6df  --mute:#777b86  --dim:#3e424c
 --signal:#f1e2a2 (gelb, Akzent/heute)  --mint:rgb(169,229,200) (Lerntage)  --pause:#b9b6c9
 Dringend/überfällig: #f2a9bd
-Fach-Farben (Reihenfolge der Vergabe):
-#c7b8f2 #a9e5c8 #a8c8ec #f6c6a0 #f2a9bd #f1e2a2 #b3e0e6 #dcc3ea #cfe3a6
+Fach-Farben (Reihenfolge der Vergabe, seit v5 kräftiger/weiter getrennt; alte Pastell-Palette wird migriert):
+#ba96f8 #7edda6 #71b2f4 #f89462 #f494b8 #f6e46f #69d0d3 #e3acec #b5dd7e
 ```
 
 - Fonts: Space Grotesk (400/500) für Text, JetBrains Mono (200/300/400) für Zahlen/Zeiten.

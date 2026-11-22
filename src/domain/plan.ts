@@ -55,10 +55,10 @@ export function removeItem(s: State, id: string, nowMs: number): State {
 /* ---------- Darstellung ---------- */
 
 export const TYPES: Record<PlanType, { label: string; c: string }> = {
-  block: { label: 'Block', c: '#a8c8ec' },
+  block: { label: 'Block', c: '#71b2f4' },
   abgabe: { label: 'Abgabe', c: '#f6c6a0' },
   klausur: { label: 'Klausur', c: '#f2a9bd' },
-  termin: { label: 'Sonstiges', c: '#a4a7b0' },
+  termin: { label: 'Sonstiges', c: '#8a8a8c' },
 }
 
 /** Block/Termin mit Start und Ende → im Zeitraster; alles andere in der Zeile „fällig“. */

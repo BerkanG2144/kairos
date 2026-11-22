@@ -1,8 +1,21 @@
 /** Pseudo-Fach-ID für Pausen. Zählt nie als Lernzeit. */
 export const PAUSE = '_p'
 
-/** Fach-Farben in Vergabe-Reihenfolge. */
+/** Fach-Farben in Vergabe-Reihenfolge (v5: kräftiger und im Farbton weiter auseinander). */
 export const COLORS = [
+  '#ba96f8',
+  '#7edda6',
+  '#71b2f4',
+  '#f89462',
+  '#f494b8',
+  '#f6e46f',
+  '#69d0d3',
+  '#e3acec',
+  '#b5dd7e',
+] as const
+
+/** Pastell-Palette bis v4 – gleiche Reihenfolge wie COLORS, für die Migration. */
+export const OLD_COLORS = [
   '#c7b8f2',
   '#a9e5c8',
   '#a8c8ec',
