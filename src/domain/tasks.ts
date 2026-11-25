@@ -4,10 +4,10 @@
  * Alle Funktionen sind rein (State → State).
  */
 import { PAUSE } from './constants.ts'
-import { countedBlocks } from './sessions.ts'
+import { addSpan, countedBlocks } from './sessions.ts'
 import { monthKeyOfDay } from './time.ts'
 import { actById, start, stop } from './tracker.ts'
-import type { ActId, MonthDoc, State, Task } from './types.ts'
+import type { ActId, ByDay, MonthDoc, State, Task } from './types.ts'
 
 export const TASK_TITLE_MAX = 140
 
@@ -212,12 +212,21 @@ export function rollover(s: State, today: string, nowMs: number): State {
   return putTasks(s, list, nowMs)
 }
 
-/** Gelernte Sekunden je Task (inkl. laufendem Timer; Blöcke unter 5 min zählen nicht). */
+/**
+ * Gelernte Sekunden je Task an seinem Tag `d` (inkl. laufendem Timer; Blöcke unter 5 min zählen
+ * nicht). Wandert ein offener Task per Rollover auf heute, startet seine Zeit also bei 0 – die
+ * Zeit von gestern bleibt gestern (Statistik, Kalender). Sessions über Mitternacht werden geteilt.
+ */
 export function taskTimes(s: State, nowSec: number): Record<string, number> {
-  const out: Record<string, number> = {}
+  const perDay: ByDay = {}
   for (const b of countedBlocks(s, nowSec)) {
     if (!b.k) continue
-    for (const [t0, t1] of b.parts) out[b.k] = (out[b.k] ?? 0) + (t1 - t0)
+    for (const [t0, t1] of b.parts) addSpan(perDay, b.k, t0, t1)
+  }
+  const out: Record<string, number> = {}
+  for (const t of allTasks(s)) {
+    const sec = perDay[t.d]?.[t.id]
+    if (sec) out[t.id] = sec
   }
   return out
 }

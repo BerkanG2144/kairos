@@ -289,6 +289,27 @@ describe('Offene Tasks wandern nach heute', () => {
     expect(s.months['2026-10']!.k).toEqual([])
   })
 
+  it('Task-Zeit zählt nur am Tag des Tasks: nach dem Rollover startet sie bei 0', () => {
+    let s = base('Analysis') // t1 am 18.11.
+    s = toggleTaskTimer(s, 't1', ms(60), act(s, 'Mathe')) // 11:00
+    s = toggleTaskTimer(s, 't1', ms(111)) // 11:51 → 51 min
+    expect(taskTimes(s, sec(120))).toEqual({ t1: 51 * 60 })
+    const tomorrow = ms(24 * 60) // 19.11., 10:00
+    s = rollover(s, '2026-11-19', tomorrow)
+    expect(tasksOn(s, '2026-11-19').map((t) => t.id)).toEqual(['t1'])
+    expect(taskTimes(s, Math.floor(tomorrow / 1000))).toEqual({})
+    s = toggleTaskTimer(s, 't1', tomorrow, act(s, 'Mathe'))
+    expect(taskTimes(s, Math.floor(tomorrow / 1000) + 600)).toEqual({ t1: 600 })
+  })
+
+  it('Session über Mitternacht: nur der Teil am Tag des Tasks zählt', () => {
+    let s = base('Nacht') // t1 am 18.11.
+    const late = new Date('2026-11-18T23:30:00').getTime()
+    s = toggleTaskTimer(s, 't1', late, act(s, 'Mathe'))
+    s = toggleTaskTimer(s, 't1', late + 60 * 60_000) // bis 00:30
+    expect(taskTimes(s, Math.floor(late / 1000) + 7200)).toEqual({ t1: 30 * 60 })
+  })
+
   it('nichts zu tun → gleicher State', () => {
     const s = base('A')
     expect(rollover(s, '2026-11-18', T0)).toBe(s)
